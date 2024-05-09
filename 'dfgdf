@@ -5,6 +5,7 @@ git branch //show branches
     dev
 
 git checkout main //switch to branch main
+
 git pull dev //pull changes from branch dev to branch main
 git merge dev //merge branch dev to branch main
     solve conflicts //if any

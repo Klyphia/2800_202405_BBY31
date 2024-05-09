@@ -1,7 +1,7 @@
 <html>
  <body>
-## About Us
-Team Name: BBY-31
+About Us <br>
+Team Name: BBY-31 <br>
 Team Members: 
 <ul>
     <li>Andre</li>
