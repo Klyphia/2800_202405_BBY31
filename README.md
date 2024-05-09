@@ -1,6 +1,6 @@
 <html>
  <body>
-## About Us <br>
+About Us <br>
 Team Name: BBY-31 <br>
 Team Members: 
 <ul>
