@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <html>
  <body>
 About Us <br>
@@ -13,9 +12,3 @@ Team Members:
   </ul>
  </body>
 </html>
-=======
-# COMP2800_BBY_31
-
-kyle was here
-Bill was here
->>>>>>> Bill_features
