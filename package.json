@@ -1,0 +1,16 @@
+{
+  "name": "comp2800-bby31",
+  "version": "1.0.0",
+  "description": "<<<<<<< HEAD\r <html>\r  <body>\r ## About Us <br>\r Team Name: BBY-31 <br>\r Team Members: \r <ul>\r     <li>Andre</li>\r     <li>Ben</li>\r     <li>Bill</li>\r     <li>Calvin</li>\r     <li>Kyle</li>\r   </ul>\r  </body>\r </html>\r =======\r # COMP2800_BBY_31",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "node": "^20.13.1",
+    "nodemon": "^3.1.0"
+  }
+}
