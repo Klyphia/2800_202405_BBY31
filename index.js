@@ -1,10 +1,13 @@
-const MongoStore = require('connect-mongo');
-require('dotenv').config();
+require("./utils.js");
 
-// Validate environment variables
-if (!process.env.MONGODB_HOST ||!process.env.MONGODB_USER ||!process.env.MONGODB_PASSWORD ||!process.env.MONGODB_DATABASE ||!process.env.MONGODB_SESSION_SECRET ||!process.env.NODE_SESSION_SECRET) {
-  throw new Error('Missing environment variables');
-}
+require('dotenv').config();
+const express = require('express');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const bcrypt = require('bcrypt');
+
+const app = express();
+const port = 8008;
 
 const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_user = process.env.MONGODB_USER;
@@ -16,6 +19,10 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 // Create a valid MongoDB connection string
 const mongoUrl = `mongodb://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}?authSource=admin`;
 
+var {database} = include('databaseConnection');
+
+const userCollection = database.db(mongodb_database).collection('users');
+
 var mongoStore = MongoStore.create({
   mongoUrl,
   crypto: {
@@ -23,10 +30,15 @@ var mongoStore = MongoStore.create({
   }
 });
 
+app.use(session({
+    secret: node_session_secret,
+    store: mongoStore, 
+    saveUninitialized: false,
+    resave: true
+}));
+
 //... rest of your code
-const express = require('express');
-const app = express();
-const port = 8008;
+
 
 // Middleware
 app.use(express.json());
