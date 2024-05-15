@@ -1,23 +1,24 @@
 require("./utils.js");
 
-require('dotenv').config();
 const express = require('express');
+require('dotenv').config();
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const port = 8008;
+const port = process.env.PORT;
+const node_session_secret = '415e198b-ecbc-43a0-907d-6afae73c61e8';
 
 const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_user = process.env.MONGODB_USER;
 const mongodb_password = process.env.MONGODB_PASSWORD;
 const mongodb_database = process.env.MONGODB_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
-const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 // Create a valid MongoDB connection string
-const mongoUrl = `mongodb://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}?authSource=admin`;
+const mongoUrl = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
+//console.log(mongoUrl);
 
 var {database} = include('databaseConnection');
 
@@ -42,7 +43,7 @@ app.use(session({
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 
 app.set('views', './views'); // Specify the views directory
 app.set('view engine', 'ejs');
