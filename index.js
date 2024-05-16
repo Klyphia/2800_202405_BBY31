@@ -15,3 +15,4 @@ var mongoStore = MongoStore.create({
 		secret: mongodb_session_secret
 	}
 })
+
