@@ -28,14 +28,6 @@ var { database } = include("databaseConnection");
 const userCollection = database.db(mongodb_database).collection("users");
 
 var mongoStore = MongoStore.create({
-<<<<<<< HEAD
-	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/sessions`,
-	crypto: {
-		secret: mongodb_session_secret
-	}
-})
-
-=======
   mongoUrl,
   crypto: {
     secret: mongodb_session_secret,
@@ -215,8 +207,38 @@ app.post("submitSignUp", async (req, res) => {
     await userCollection.insertOne({ 
       username: username, 
       password: hashedPassword, 
-      savedDrafts: [], 
-      savedPosts: [], 
+      savedDrafts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ], 
+      savedPosts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ], 
       userPosts: [
         {
           postId: ObjectId,
@@ -337,4 +359,3 @@ app.get("/profile", sessionValidation, async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
->>>>>>> d53eab8c7bf508f637f9270d1e36a6126f748399
