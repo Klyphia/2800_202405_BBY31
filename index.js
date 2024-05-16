@@ -72,6 +72,40 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
+// Route for creating user post
+app.get("/createPost", sessionValidation, async (req, res) => {
+  res.render("createPost");
+});
+
+app.post("/submitPost", sessionValidation, async (req, res) => {
+  try {
+    // Get form data from request body
+    const { postTitle, postTag, postUploadImage, postContent } = req.body;
+    const username = req.session.username;
+
+    // Create a post object
+    const post = {
+      postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
+      postTitle: postTitle,
+      postTag: postTag,
+      postUploadImage: postUploadImage,
+      postContent: postContent,
+      comments: [] // Initialize an empty comments array for the post
+    };
+
+    // Update user document in the database to add the new post to userPosts array
+    await userCollection.updateOne(
+      { username: username },
+      { $push: { userPosts: post } }
+    );
+
+    res.redirect("/postConfirmation"); // Redirect the confirmation page
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Route to display existing story posts
 app.get("/viewposts", async (req, res) => {
   const loggedIn = req.session.loggedIn;
@@ -79,7 +113,7 @@ app.get("/viewposts", async (req, res) => {
     // Fetch userPosts array from all documents
     const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
 
-    // Extract userPosts from each document and flatten into a single array
+    // Extract userPosts from each document and flatten into a single array (storyPosts)
     const storyPosts = userPostsArray.flatMap(user => user.userPosts);
 
     // render story/posts onto the viewpost page
@@ -179,6 +213,8 @@ app.post("submitSignUp", async (req, res) => {
         {
           postId: ObjectId,
           postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
           postContent: String,
           comments: [
             {
@@ -188,13 +224,7 @@ app.post("submitSignUp", async (req, res) => {
             }
           ]
         }
-      ], 
-      userTags: [],
-      userPostTitles: [], 
-      userPics: [], 
-      userLinks: [],  
-      userTexts: [], 
-      userComments: [] });
+      ] });
 
     console.log("Inserted user");
 
@@ -238,13 +268,8 @@ app.post("/loggingIn", async (req, res) => {
       password: 1, 
       savedDrafts: 1, 
       savedPosts: 1, 
-      userPosts: 1,
-      userTags: 1,
-      userPostTitles: 1, 
-      userPics: 1, 
-      userLinks: 1,  
-      userTexts: 1, 
-      userComments: 1 })
+      userPosts: 1
+      })
     .toArray();
 
   if (result.length === 0) {
@@ -266,12 +291,6 @@ app.post("/loggingIn", async (req, res) => {
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
-    req.session.userPostTitles = result[0].userPostTitles;
-    req.session.userTags = result[0].userTags;
-    req.session.userLinks = result[0].userLinks;
-    req.session.userTags = result[0].userTags;
-    req.session.userTexts = result[0].userTexts;
-    req.session.userComments = result[0].userComments;
     req.session.cookie.maxAge = expireTime;
 
     res.redirect("/profile");
@@ -297,24 +316,14 @@ app.get("/profile", sessionValidation, async (req, res) => {
   const { 
     savedDrafts, 
     savedPosts, 
-    userPosts, 
-    userTags,
-    userPostTitles, 
-    userPics, 
-    userLinks,  
-    userTexts, 
-    userComments
+    userPosts
   } = result;
 
   res.render("profile", { 
     savedDrafts, 
     savedPosts, 
-    userPosts, userTags,
-    userPostTitles, 
-    userPics, 
-    userLinks,  
-    userTexts, 
-    userComments, loggedIn: false, isloggedIn: false });
+    userPosts, 
+    loggedIn: false, isloggedIn: false });
 });
 
 app.listen(port, () => {
