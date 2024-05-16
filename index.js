@@ -6,6 +6,8 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
+const saltRounds = 12;
+const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
 const app = express();
 const port = process.env.PORT;
@@ -78,8 +80,92 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
-app.get("/viewposts", (req, res) => {
-  res.render("viewposts");
+// Route for creating user post
+app.get("/createPost", sessionValidation, async (req, res) => {
+  res.render("createPost");
+});
+
+app.post("/submitPost", sessionValidation, async (req, res) => {
+  try {
+    // Get form data from request body
+    const { postTitle, postTag, postUploadImage, postContent } = req.body;
+    const username = req.session.username;
+
+    // Create a post object
+    const post = {
+      postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
+      postTitle: postTitle,
+      postTag: postTag,
+      postUploadImage: postUploadImage,
+      postContent: postContent,
+      comments: [] // Initialize an empty comments array for the post
+    };
+
+    // Update user document in the database to add the new post to userPosts array
+    await userCollection.updateOne(
+      { username: username },
+      { $push: { userPosts: post } }
+    );
+
+    res.redirect("/postConfirmation"); // Redirect the confirmation page
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Route to display existing story posts
+app.get("/viewposts", async (req, res) => {
+  const loggedIn = req.session.loggedIn;
+  try {
+    // Fetch userPosts array from all documents
+    const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
+
+    // Extract userPosts from each document and flatten into a single array (storyPosts)
+    const storyPosts = userPostsArray.flatMap(user => user.userPosts);
+
+    // render story/posts onto the viewpost page
+    res.render("viewposts", { storyPosts: storyPosts, loggedIn: loggedIn });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Route to handle comment submission
+app.post("/post/comment", sessionValidation, async (req, res) => {
+  const { postId, comment } = req.body;
+  const username = req.session.username;
+
+  try {
+    // Find the post by postId
+    const post = await userCollection.findOne({ "userPosts.postId": postId });
+    if (!post) {
+      res.status(404).json({ message: "Post not found" });
+      return;
+    }
+
+    // Add the comment to the post's comments array
+    post.userPosts.forEach(async (userPost) => {
+      if (userPost.postId === postId) {
+        // userPosts comments array
+        userPost.comments.push({
+          commenter: username,
+          comment: comment,
+          createdAt: new Date()
+        });
+      }
+    });
+
+    // Update the post in the database
+    await userCollection.updateOne({ "userPosts.postId": postId }, { $set: post });
+
+    res.status(200).json({ message: "Comment added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 app.get("/journal", (req, res) => {
@@ -90,7 +176,77 @@ app.get("/userpage", (req, res) => {
   res.render("userpage");
 });
 
+app.get("/signup", (req, res) => {
+  res.render("signup");
+});
 
+app.post("submitSignUp", async (req, res) => {
+  var username = req.body.username;
+  var password = req.body.password;
+
+  const schema = Joi.object(
+    {
+      username: Joi.string().alphanum().max(20).required(),
+      password: Joi.string().max(20).required()
+    });
+
+  const validationResult = schema.validate({ username, password });
+
+  if (validationResult.error != null) {
+
+    const errorMessages = validationResult.error.details.map(detail => detail.message);
+
+    switch (true) {
+      case !username:
+        res.status(400);
+        return res.render("invalidName", { error: errorMessages });
+      case !password:
+        res.status(400);
+        return res.render("invalidPassword", { error: errorMessages });
+      default:
+        break;
+    }
+  }
+
+  var hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  // intialize newUser with empty arrays for drafts, saved posts, posts made, each content of the post, etc. 
+  try {
+    await userCollection.insertOne({ 
+      username: username, 
+      password: hashedPassword, 
+      savedDrafts: [], 
+      savedPosts: [], 
+      userPosts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ] });
+
+    console.log("Inserted user");
+
+    // Set session variables
+    req.session.loggedIn = true;
+    req.session.username = username;
+
+    // Send the user to the members area
+    res.redirect('/profile');
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("internalServerError");
+  }
+});
 
 app.get("/login", (req, res) => {
   res.render("login");
@@ -101,7 +257,7 @@ app.post("/loggingIn", async (req, res) => {
   var password = req.body.password;
 
   const schema = Joi.object({
-    username: Joi.string().regex(/^[a-zA-Z0-9-_@.]+$/).required(),
+    username: Joi.string().alphanum().max(20).required(),
     password: Joi.string().required()
   });
 
@@ -109,39 +265,47 @@ app.post("/loggingIn", async (req, res) => {
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
-    res.render("invalidLogin", { loggedIn: false, isLoginPage: false });
+    res.render("invalidLogin");
     return;
   }
 
   const result = await userCollection
     .find({ username: username })
-    .project({ username: 1, password: 1, savedDraft: 1, savedPosts: 1, userPosts: 1 })
+    .project({ 
+      username: 1, 
+      password: 1, 
+      savedDrafts: 1, 
+      savedPosts: 1, 
+      userPosts: 1
+      })
     .toArray();
 
   if (result.length === 0) {
     // Handle case when no user is found with the provided email
     res.status(400);
-    res.render("invalidLogin", { loggedIn: false, isLoginPage: false });
+    res.render("invalidLogin");
     return;
   }
 
   console.log(result);
   if (result.length != 1) {
     res.status(400);
-    res.render("invalidLogin", { loggedIn: false, isLoginPage: false });
+    res.render("invalidLogin");
   }
   if (await bcrypt.compare(password, result[0].password)) {
     console.log("correct password");
     req.session.loggedIn = true;
     req.session.name = result[0].name;
-    req.session.user_type = result[0].user_type;
+    req.session.savedDrafts = result[0].savedDrafts;
+    req.session.savedPosts = result[0].savedPosts;
+    req.session.userPosts = result[0].userPosts;
     req.session.cookie.maxAge = expireTime;
 
     res.redirect("/profile");
     return;
   } else {
     res.status(400);
-    res.render("invalidLogin", { loggedIn: false, isLoginPage: false });
+    res.render("invalidLogin");
   }
 });
 
@@ -157,9 +321,17 @@ app.get("/profile", sessionValidation, async (req, res) => {
     return;
   }
 
-  const { savedDraft, savedPosts, userPosts } = result;
+  const { 
+    savedDrafts, 
+    savedPosts, 
+    userPosts
+  } = result;
 
-  res.render("admin", { savedDraft, savedPosts, userPosts, loggedIn: false, isloggedIn: false });
+  res.render("profile", { 
+    savedDrafts, 
+    savedPosts, 
+    userPosts, 
+    loggedIn: false, isloggedIn: false });
 });
 
 app.listen(port, () => {
