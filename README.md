@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 <html>
  <body>
-## About Us <br>
+About Us <br>
 Team Name: BBY-31 <br>
 Team Members: 
 <ul>
@@ -13,9 +12,3 @@ Team Members:
   </ul>
  </body>
 </html>
-=======
-# COMP2800_BBY_31
-
-kyle was here
-Bill was here
->>>>>>> Bill_features
