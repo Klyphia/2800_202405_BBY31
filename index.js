@@ -177,6 +177,17 @@ app.get("/signup", (req, res) => {
   res.render("signup");
 });
 
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    } else {
+      res.redirect("/");
+    }
+  });
+});
+
 app.post("/submitSignUp", async (req, res) => {
   const { username, password, email } = req.body;
 
@@ -265,7 +276,8 @@ app.post("/loggingIn", async (req, res) => {
   console.log(result);
   if (result.length != 1) {
     res.status(400);
-    res.render("invalidLogin");
+    //res.render("invalidLogin");
+    console.log("invalidLogin");
   }
   if (await bcrypt.compare(password, result[0].password)) {
     console.log("correct password");
