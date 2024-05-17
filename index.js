@@ -23,6 +23,9 @@ const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const mongoUrl = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
 //console.log(mongoUrl);
 
+// use this middleware to access pre-determind profile pics for users to select for their profile.
+app.use(express.static(__dirname + "/profilePics"));
+
 var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
@@ -54,6 +57,7 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
+    console.log('Going to landing page.')
     res.render('landingPage');
   } else {
     next();
@@ -85,7 +89,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 app.post("/submitPost", sessionValidation, async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postContent } = req.body;
+    const { postTitle, postTag, postUploadImage, postLink, commentVisibility, postContent } = req.body;
     const username = req.session.username;
 
     // Create a post object
@@ -94,6 +98,8 @@ app.post("/submitPost", sessionValidation, async (req, res) => {
       postTitle: postTitle,
       postTag: postTag,
       postUploadImage: postUploadImage,
+      postLink: postLink,
+      commentVisibility: commentVisibility,
       postContent: postContent,
       comments: [] // Initialize an empty comments array for the post
     };
@@ -211,9 +217,54 @@ app.post("/submitSignUp", async (req, res) => {
       username: username,
       password: hashedPassword,
       email: email, // changed to include email
-      savedDrafts: [],
-      savedPosts: [],
-      userPosts: []
+      savedDrafts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ],
+      savedPosts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ],
+      userPosts: [
+        {
+          postId: ObjectId,
+          postTitle: String,
+          postTag: String,
+          postUploadImage: null || true, // change this later!!!!
+          postContent: String,
+          comments: [
+            {
+              commenter: String, // Username of the commenter
+              comment: String,
+              createdAt: Date // Timestamp of when the comment was made
+            }
+          ]
+        }
+      ]
     });
 
     console.log("Inserted user");
@@ -236,17 +287,15 @@ app.get("/login", (req, res) => {
 app.post("/loggingIn", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
-  var email = req.body.email;
+  // var email = req.body.email;
 
 
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required(),
-    email: Joi.string().email().required()
-
+    password: Joi.string().required()
   });
 
-  const validationResult = schema.validate({ username, password, email});
+  const validationResult = schema.validate({ username, password});
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -255,7 +304,7 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-  .find({ username: username, email: email })
+  .find({ username: username})
   .project({ 
       username: 1, 
       password: 1, 
@@ -282,14 +331,15 @@ app.post("/loggingIn", async (req, res) => {
   if (await bcrypt.compare(password, result[0].password)) {
     console.log("correct password");
     req.session.loggedIn = true;
-    req.session.name = result[0].name;
+    console.log("Session: " + req.session.loggedIn);
+    req.session.username = result[0].username;
     req.session.email = result[0].email;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
     req.session.cookie.maxAge = expireTime;
 
-    res.redirect("/profile");
+    res.redirect("/");
     return;
   } else {
     res.status(400);
@@ -320,8 +370,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
     username,
     savedDrafts, 
     savedPosts, 
-    userPosts, 
-    loggedIn: false, isloggedIn: false });
+    userPosts });
 });
 
 app.listen(port, () => {
