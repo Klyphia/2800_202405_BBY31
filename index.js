@@ -237,17 +237,15 @@ app.get("/login", (req, res) => {
 app.post("/loggingIn", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
-  var email = req.body.email;
+  // var email = req.body.email;
 
 
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required(),
-    email: Joi.string().email().required()
-
+    password: Joi.string().required()
   });
 
-  const validationResult = schema.validate({ username, password, email});
+  const validationResult = schema.validate({ username, password});
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -256,7 +254,7 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-  .find({ username: username, email: email })
+  .find({ username: username})
   .project({ 
       username: 1, 
       password: 1, 
@@ -283,14 +281,15 @@ app.post("/loggingIn", async (req, res) => {
   if (await bcrypt.compare(password, result[0].password)) {
     console.log("correct password");
     req.session.loggedIn = true;
-    req.session.name = result[0].name;
+    console.log("Session: " + req.session.loggedIn);
+    req.session.username = result[0].username;
     req.session.email = result[0].email;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
     req.session.cookie.maxAge = expireTime;
 
-    res.redirect("/home");
+    res.redirect("/");
     return;
   } else {
     res.status(400);
