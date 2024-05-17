@@ -1,53 +1,84 @@
-<%- include('templates/header.ejs') %>
+<head>
+    <title>Home Page</title>
+    <link rel="stylesheet" href="public/public/stylesheets/home.css">
+</head>
 
-<<<<<<< HEAD
-<main>
-    <section class="daily-quote">
-        <h2>Daily Quote</h2>
-        <p id="quote"></p>
-        <script>
-            const quotes = [
-                "Quote 1",
-                "Quote 2",
-                "Quote 3",
-                "Quote 4",
-                "Quote 5"
-            ];
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            document.getElementById("quote").textContent = quotes[randomIndex];
-        </script>
-    </section>
+<body>
+        <%- include('templates/header.ejs') %>
+            <!-- A button to open the popup form -->
+            <button class="open-button" onclick="openForm()">Open Form</button>
 
-    <section class="grid-container">
-        <h2>Grid</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <p>Placeholder text 1</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 2</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 3</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <p>Placeholder text 4</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 5</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 6</p>
-            </div>
-        </div>
-    </section>
-</main>
+            <!-- The form -->
+            <div class="form-popup" id="myForm">
+                <form action="/action_page.php" class="form-container">
+                    <h1>How are you feeling today?</h1>
 
-<%- include('templates/footer.ejs') %>
-=======
-hello world
+                    <div class="slidecontainer">
+                        <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+                    </div>
 
-<%- include('templates/footer.ejs') %>
->>>>>>> createPost_features
+                    <button type="submit" class="btn">Submit</button>
+                    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+                </form>
+            </div>
+            <section class="daily-quote">
+                <h2>Daily Quote</h2>
+                <p id="quote"></p>
+                <script>
+                    const quotes = [
+                        "Quote 1",
+                        "Quote 2",
+                        "Quote 3",
+                        "Quote 4",
+                        "Quote 5"
+                    ];
+                    const randomIndex = Math.floor(Math.random() * quotes.length);
+                    document.getElementById("quote").textContent = quotes[randomIndex];
+                </script>
+            </section>
+
+            <section class="grid-container">
+                <h2>Grid</h2>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>Placeholder text 1</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>Placeholder text 2</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>Placeholder text 3</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>Placeholder text 4</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>Placeholder text 5</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>Placeholder text 6</p>
+                    </div>
+                </div>
+            </section>
+    <script>
+        function openForm() {
+            document.getElementById("myForm").style.display = "block";
+        }
+
+        function closeForm() {
+            document.getElementById("myForm").style.display = "none";
+        }
+        var slider = document.getElementById("myRange");
+        var output = document.getElementById("demo");
+        output.innerHTML = slider.value; // Display the default slider value
+
+        // Update the current slider value (each time you drag the slider handle)
+        slider.oninput = function () {
+            output.innerHTML = this.value;
+        }
+    </script>
+
+    <%- include('templates/footer.ejs') %>
+</body>
