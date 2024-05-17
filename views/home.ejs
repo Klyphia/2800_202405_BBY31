@@ -1,6 +1,47 @@
 <%- include('templates/header.ejs') %>
 
-<h1>Hello</h1>
+<main>
+    <section class="daily-quote">
+        <h2>Daily Quote</h2>
+        <p id="quote"></p>
+        <script>
+            const quotes = [
+                "Quote 1",
+                "Quote 2",
+                "Quote 3",
+                "Quote 4",
+                "Quote 5"
+            ];
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            document.getElementById("quote").textContent = quotes[randomIndex];
+        </script>
+    </section>
+
+    <section class="grid-container">
+        <h2>Grid</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <p>Placeholder text 1</p>
+            </div>
+            <div class="col-md-4">
+                <p>Placeholder text 2</p>
+            </div>
+            <div class="col-md-4">
+                <p>Placeholder text 3</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <p>Placeholder text 4</p>
+            </div>
+            <div class="col-md-4">
+                <p>Placeholder text 5</p>
+            </div>
+            <div class="col-md-4">
+                <p>Placeholder text 6</p>
+            </div>
+        </div>
+    </section>
+</main>
 
 <%- include('templates/footer.ejs') %>
-

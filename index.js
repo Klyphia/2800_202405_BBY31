@@ -52,7 +52,7 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
-    res.redirect("/login");
+    res.render('landingPage');
   } else {
     next();
   }
@@ -68,10 +68,9 @@ app.set("views", "./views"); // Specify the views directory
 app.set("view engine", "ejs");
 
 // Routes
-app.get('/', (req, res) => {
-      res.render("home")
-  }
-);
+app.get("/", sessionValidation, async (req, res) => {
+  res.render("home");
+});
 app.get("/passwordReset", (req, res) => {
   res.render("passwordReset");
 });
