@@ -9,7 +9,7 @@ const Joi = require("joi");
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
-const app = express();
+const app = new express();
 const port = process.env.PORT;
 const node_session_secret = "415e198b-ecbc-43a0-907d-6afae73c61e8";
 
@@ -42,6 +42,8 @@ app.use(
     resave: true,
   })
 );
+
+app.use(express.static(__dirname+'/public'));
 
 function isValidSession(req) {
   if (req.session.loggedIn) {
