@@ -9,7 +9,7 @@ const Joi = require("joi");
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
-const app = express();
+const app = new express();
 const port = process.env.PORT;
 const node_session_secret = "415e198b-ecbc-43a0-907d-6afae73c61e8";
 
@@ -42,6 +42,8 @@ app.use(
     resave: true,
   })
 );
+
+app.use(express.static(__dirname+'/public'));
 
 function isValidSession(req) {
   if (req.session.loggedIn) {
@@ -176,6 +178,17 @@ app.get("/signup", (req, res) => {
   res.render("signup");
 });
 
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    } else {
+      res.redirect("/");
+    }
+  });
+});
+
 app.post("/submitSignUp", async (req, res) => {
   const { username, password, email } = req.body;
 
@@ -264,7 +277,8 @@ app.post("/loggingIn", async (req, res) => {
   console.log(result);
   if (result.length != 1) {
     res.status(400);
-    res.render("invalidLogin");
+    //res.render("invalidLogin");
+    console.log("invalidLogin");
   }
   if (await bcrypt.compare(password, result[0].password)) {
     console.log("correct password");
