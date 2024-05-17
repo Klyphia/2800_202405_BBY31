@@ -52,6 +52,7 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
+    console.log('Going to landing page.')
     res.render('landingPage');
   } else {
     next();
@@ -275,7 +276,7 @@ app.post("/loggingIn", async (req, res) => {
     req.session.userPosts = result[0].userPosts;
     req.session.cookie.maxAge = expireTime;
 
-    res.redirect("/profile");
+    res.redirect("/home");
     return;
   } else {
     res.status(400);
