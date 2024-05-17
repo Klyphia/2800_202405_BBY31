@@ -68,9 +68,10 @@ app.set("views", "./views"); // Specify the views directory
 app.set("view engine", "ejs");
 
 // Routes
-app.get("/", (req, res) => {
-  res.render("home");
-});
+app.get('/', (req, res) => {
+      res.render("home")
+  }
+);
 app.get("/passwordReset", (req, res) => {
   res.render("passwordReset");
 });
