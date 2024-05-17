@@ -369,7 +369,8 @@ app.get("/profile", sessionValidation, async (req, res) => {
   res.render("profile", { 
     savedDrafts, 
     savedPosts, 
-    userPosts });
+    userPosts,
+    username: req.session.username});
 });
 
 app.listen(port, () => {
