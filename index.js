@@ -71,6 +71,9 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => {
   res.render("home");
 });
+app.get("/passwordReset", (req, res) => {
+  res.render("passwordReset");
+});
 
 // Route for creating user post
 app.get("/createPost", sessionValidation, async (req, res) => {
@@ -173,15 +176,15 @@ app.get("/signup", (req, res) => {
 });
 
 app.post("/submitSignUp", async (req, res) => {
-  var username = req.body.username;
-  var password = req.body.password;
+  const { username, password, email } = req.body;
 
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().max(20).required()
+    password: Joi.string().max(20).required(),
+    email: Joi.string().email().required() // changed to include email
   });
 
-  const validationResult = schema.validate({ username, password });
+  const validationResult = schema.validate({ username, password, email });
 
   if (validationResult.error != null) {
     const errorMessages = validationResult.error.details.map(detail => detail.message);
@@ -189,11 +192,12 @@ app.post("/submitSignUp", async (req, res) => {
   }
 
   try {
-    var hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await userCollection.insertOne({
       username: username,
       password: hashedPassword,
+      email: email, // changed to include email
       savedDrafts: [],
       savedPosts: [],
       userPosts: []
@@ -219,13 +223,17 @@ app.get("/login", (req, res) => {
 app.post("/loggingIn", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
+  var email = req.body.email;
+
 
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
+    email: Joi.string().email().required()
+
   });
 
-  const validationResult = schema.validate({ username, password });
+  const validationResult = schema.validate({ username, password, email});
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -234,10 +242,11 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-    .find({ username: username })
-    .project({ 
+  .find({ username: username, email: email })
+  .project({ 
       username: 1, 
       password: 1, 
+      email: 1, 
       savedDrafts: 1, 
       savedPosts: 1, 
       userPosts: 1
@@ -260,6 +269,7 @@ app.post("/loggingIn", async (req, res) => {
     console.log("correct password");
     req.session.loggedIn = true;
     req.session.name = result[0].name;
+    req.session.email = result[0].email;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
@@ -276,6 +286,7 @@ app.post("/loggingIn", async (req, res) => {
 app.get("/profile", sessionValidation, async (req, res) => {
 
   const username = req.session.username;
+  console.log(username);
 
   const result = await userCollection.findOne({ username });
 
