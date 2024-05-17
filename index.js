@@ -368,6 +368,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
   } = result;
 
   res.render("profile", { 
+    username,
     savedDrafts, 
     savedPosts, 
     userPosts,
