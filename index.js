@@ -71,6 +71,9 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => {
   res.render("home");
 });
+app.get("/passwordReset", (req, res) => {
+  res.render("passwordReset");
+});
 
 // Route for creating user post
 app.get("/createPost", sessionValidation, async (req, res) => {
@@ -172,103 +175,46 @@ app.get("/signup", (req, res) => {
   res.render("signup");
 });
 
-app.post("submitSignUp", async (req, res) => {
-  var username = req.body.username;
-  var password = req.body.password;
+app.post("/submitSignUp", async (req, res) => {
+  const { username, password, email } = req.body;
 
-  const schema = Joi.object(
-    {
-      username: Joi.string().alphanum().max(20).required(),
-      password: Joi.string().max(20).required()
-    });
+  const schema = Joi.object({
+    username: Joi.string().alphanum().max(20).required(),
+    password: Joi.string().max(20).required(),
+    email: Joi.string().email().required() // changed to include email
+  });
 
-  const validationResult = schema.validate({ username, password });
+  const validationResult = schema.validate({ username, password, email });
 
   if (validationResult.error != null) {
-
     const errorMessages = validationResult.error.details.map(detail => detail.message);
-
-    switch (true) {
-      case !username:
-        res.status(400);
-        return res.render("invalidName", { error: errorMessages });
-      case !password:
-        res.status(400);
-        return res.render("invalidPassword", { error: errorMessages });
-      default:
-        break;
-    }
+    return res.status(400).json({ error: errorMessages });
   }
 
-  var hashedPassword = await bcrypt.hash(password, saltRounds);
-
-  // intialize newUser with empty arrays for drafts, saved posts, posts made, each content of the post, etc. 
   try {
-    await userCollection.insertOne({ 
-      username: username, 
-      password: hashedPassword, 
-      savedDrafts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ], 
-      savedPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ], 
-      userPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ] });
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await userCollection.insertOne({
+      username: username,
+      password: hashedPassword,
+      email: email, // changed to include email
+      savedDrafts: [],
+      savedPosts: [],
+      userPosts: []
+    });
 
     console.log("Inserted user");
 
-    // Set session variables
     req.session.loggedIn = true;
     req.session.username = username;
 
-    // Send the user to the members area
-    res.redirect('/profile');
+    res.status(200).json({ message: "User registered successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).render("internalServerError");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.get("/login", (req, res) => {
   res.render("login");
@@ -277,13 +223,17 @@ app.get("/login", (req, res) => {
 app.post("/loggingIn", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
+  var email = req.body.email;
+
 
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
+    email: Joi.string().email().required()
+
   });
 
-  const validationResult = schema.validate({ username, password });
+  const validationResult = schema.validate({ username, password, email});
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -292,10 +242,11 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-    .find({ username: username })
-    .project({ 
+  .find({ username: username, email: email })
+  .project({ 
       username: 1, 
       password: 1, 
+      email: 1, 
       savedDrafts: 1, 
       savedPosts: 1, 
       userPosts: 1
@@ -318,6 +269,7 @@ app.post("/loggingIn", async (req, res) => {
     console.log("correct password");
     req.session.loggedIn = true;
     req.session.name = result[0].name;
+    req.session.email = result[0].email;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
@@ -334,6 +286,7 @@ app.post("/loggingIn", async (req, res) => {
 app.get("/profile", sessionValidation, async (req, res) => {
 
   const username = req.session.username;
+  console.log(username);
 
   const result = await userCollection.findOne({ username });
 
