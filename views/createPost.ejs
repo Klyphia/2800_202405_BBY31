@@ -1,0 +1,38 @@
+<%- include('templates/header.ejs') %>
+
+<form action="/submitPost" method="post" enctype="multipart/form-data">
+
+    <!-- Other form fields for post title, tag, and content -->
+    <label for="postTitle">Title:</label>
+    <input type="text" id="postTitle" name="postTitle" required>
+    <br>
+    
+    <label for="postTag">Tag:</label>
+    <input type="text" id="postTag" name="postTag">
+  
+    <!-- Input field for uploading image -->
+    <label for="postImage">Upload Image:</label>
+    <input type="file" id="postImage" name="postImage">
+    <br>
+  
+    <!-- Input field for sharing a link -->
+    <label for="postLink">Share Link:</label>
+    <input type="text" id="postLink" name="postLink">
+    <br>
+
+    <!-- Checkbox for making comments visible -->
+    <label for="makeCommentsVisible">Make Comments Visible:</label>
+    <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true">
+    <br>
+  
+    <label for="postContent">Content:</label>
+    <textarea id="postContent" name="postContent" rows="4" required></textarea>
+    <br>
+  
+    <!-- Submit button -->
+    <button type="submit">Submit Post</button>
+    <button type="submit">Save Draft</button>
+  </form>
+
+  <%- include('templates/footer.ejs') %>
+  

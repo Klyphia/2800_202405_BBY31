@@ -23,6 +23,9 @@ const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const mongoUrl = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
 //console.log(mongoUrl);
 
+// use this middleware to access pre-determind profile pics for users to select for their profile.
+app.use(express.static(__dirname + "/profilePics"));
+
 var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
@@ -80,7 +83,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 app.post("/submitPost", sessionValidation, async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postContent } = req.body;
+    const { postTitle, postTag, postUploadImage, postLink, commentVisibility, postContent } = req.body;
     const username = req.session.username;
 
     // Create a post object
@@ -89,6 +92,8 @@ app.post("/submitPost", sessionValidation, async (req, res) => {
       postTitle: postTitle,
       postTag: postTag,
       postUploadImage: postUploadImage,
+      postLink: postLink,
+      commentVisibility: commentVisibility,
       postContent: postContent,
       comments: [] // Initialize an empty comments array for the post
     };
@@ -213,6 +218,8 @@ app.post("submitSignUp", async (req, res) => {
           postTitle: String,
           postTag: String,
           postUploadImage: null || true, // change this later!!!!
+          postLink: String,
+          commentVisibility: Boolean,
           postContent: String,
           comments: [
             {
@@ -229,6 +236,8 @@ app.post("submitSignUp", async (req, res) => {
           postTitle: String,
           postTag: String,
           postUploadImage: null || true, // change this later!!!!
+          postLink: String,
+          commentVisibility: Boolean,
           postContent: String,
           comments: [
             {
@@ -245,6 +254,8 @@ app.post("submitSignUp", async (req, res) => {
           postTitle: String,
           postTag: String,
           postUploadImage: null || true, // change this later!!!!
+          postLink: String,
+          commentVisibility: Boolean,
           postContent: String,
           comments: [
             {
@@ -352,8 +363,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
   res.render("profile", { 
     savedDrafts, 
     savedPosts, 
-    userPosts, 
-    loggedIn: false, isloggedIn: false });
+    userPosts });
 });
 
 app.listen(port, () => {
