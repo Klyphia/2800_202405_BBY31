@@ -350,7 +350,8 @@ app.post("/loggingIn", async (req, res) => {
 app.get("/profile", sessionValidation, async (req, res) => {
 
   const username = req.session.username;
-  console.log(username);
+  const email = req.session.email;
+  console.log(email);
 
   const result = await userCollection.findOne({ username });
 
@@ -367,10 +368,12 @@ app.get("/profile", sessionValidation, async (req, res) => {
   } = result;
 
   res.render("profile", { 
+    username,
     savedDrafts, 
     savedPosts, 
     userPosts,
-    username: req.session.username});
+    username: req.session.username,
+    email: req.session.email});
 });
 
 app.listen(port, () => {
