@@ -320,7 +320,8 @@ app.get("/profile", sessionValidation, async (req, res) => {
     savedDrafts, 
     savedPosts, 
     userPosts, 
-    loggedIn: false, isloggedIn: false });
+    loggedIn: false, isloggedIn: false,
+   });
 });
 
 app.listen(port, () => {
