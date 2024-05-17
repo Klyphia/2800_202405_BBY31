@@ -23,9 +23,6 @@ const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const mongoUrl = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
 //console.log(mongoUrl);
 
-// use this middleware to access pre-determind profile pics for users to select for their profile.
-app.use(express.static(__dirname + "/profilePics"));
-
 var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
@@ -350,7 +347,8 @@ app.post("/loggingIn", async (req, res) => {
 app.get("/profile", sessionValidation, async (req, res) => {
 
   const username = req.session.username;
-  console.log(username);
+  const email = req.session.email;
+  console.log(email);
 
   const result = await userCollection.findOne({ username });
 
@@ -370,7 +368,8 @@ app.get("/profile", sessionValidation, async (req, res) => {
     savedDrafts, 
     savedPosts, 
     userPosts,
-    username: req.session.username});
+    username: req.session.username,
+    email: req.session.email});
 });
 
 app.listen(port, () => {

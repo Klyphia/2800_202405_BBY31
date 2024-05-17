@@ -1,69 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Page</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-  <link rel="icon" type="image/png" href="/images/icons8-asia-16.png">
-  <style>
-    .navbar {
-      border-bottom: 1px solid #ccc;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="icon" type="image/png" href="/images/icons8-asia-16.png">
+    <style>
+        .navbar {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    .navbar-brand img {
-      height: 10vh;
-      border: none;
-      margin: 0;
-    }
+        .navbar-brand img {
+            height: 10vh;
+            border: none;
+            margin: 0;
+        }
 
-    .profile-pic {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 50%;
-    }
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
-    .grid-row {
-      margin-bottom: 20px;
-    }
-  </style>
+        .grid-row {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
+
 <body>
     <header class="navbar navbar-expand-lg navbar-light" style="background-color: #a3f7b5;">
         <div class="container-fluid">
-          <a class="navbar-brand" href="/"><img src="/images/CompassionetLogo.png" alt="Compassionet"/></a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/viewposts">View Posts</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/journal">Journal</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/userpage">User Page</a>
-              </li>
-            </ul>
-            <!-- Add the logout button here -->
-            <div class="ms-auto">
-              <ul class="navbar-nav">
-                <li class="nav-item">
-                  <a class="nav-link" id="logout-btn" href="/logout">Logout</a>
-                </li>
-              </ul>
+            <a class="navbar-brand" href="/"><img src="/images/CompassionetLogo.png" alt="Compassionet" /></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/viewposts">View Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/journal">Journal</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
+                    </li>
+                </ul>
+                <!-- Add the logout button here -->
+                <div class="ms-auto">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" id="logout-btn" href="/logout">Logout</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-          </div>
         </div>
-      </header>
+    </header>
 
 
       <div class="container">
@@ -97,24 +100,24 @@
         </div>
       </div>
 
-  <script>
-    // Randomly select a profile picture
-    const profilePictures = [
-      'profile_1.png',
-      'profile_2.png',
-      'profile_3.png',
-      'profile_4.png',
-      'profile_5.png',
-      'profile_6.png',
-      'profile_7.png',
-      'profile_8.png'
-    ];
+    <script>
+        // Randomly select a profile picture
+        const profilePictures = [
+            'profile_1.png',
+            'profile_2.png',
+            'profile_3.png',
+            'profile_4.png',
+            'profile_5.png',
+            'profile_6.png',
+            'profile_7.png',
+            'profile_8.png'
+        ];
 
-    const randomPictureIndex = Math.floor(Math.random() * profilePictures.length);
-    const randomPicture = profilePictures[randomPictureIndex];
+        const randomPictureIndex = Math.floor(Math.random() * profilePictures.length);
+        const randomPicture = profilePictures[randomPictureIndex];
 
-    console.log(randomPicture);
-    document.querySelector('.profile-pic').src = `/images/profile-pictures/${randomPicture}`;
-  </script>
+        console.log(randomPicture);
+        document.querySelector('.profile-pic').src = `/images/profile-pictures/${randomPicture}`;
+    </script>
 
-<%- include('templates/footer.ejs') %>
+    <%- include('templates/footer.ejs') %>
