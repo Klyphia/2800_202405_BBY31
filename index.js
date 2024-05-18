@@ -6,6 +6,8 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
@@ -76,9 +78,6 @@ app.set("view engine", "ejs");
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
   res.render("home");
-});
-app.get("/passwordReset", (req, res) => {
-  res.render("passwordReset");
 });
 
 // Route for creating user post
@@ -217,54 +216,11 @@ app.post("/submitSignUp", async (req, res) => {
       username: username,
       password: hashedPassword,
       email: email, // changed to include email
-      savedDrafts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ],
-      savedPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ],
-      userPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ]
+      resetPasswordToken: "",
+      resetPasswordExpires: "",
+      savedDrafts: [],
+      savedPosts: [],
+      userPosts: []
     });
 
     console.log("Inserted user");
@@ -282,6 +238,121 @@ app.post("/submitSignUp", async (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
+});
+
+app.get("/passwordReset", (req, res) => {
+  res.render("passwordResetIntialized");
+});
+
+app.post("/resetPassword", async (req, res) => {
+  const useremail = req.body.email;
+
+  try {
+    // Checking if the email exists in the userCollection
+    const user = await userCollection.findOne({ email: useremail });
+
+    if (!user) {
+      return res.status(404).render("noUserFoundPage");
+    }
+
+    // Generating a unique token
+    const token = crypto.randomBytes(20).toString('hex');
+
+    // Setting token expiration time (1 hour from now)
+    const tokenExpiry = Date.now() + 3600000; // 1 hour in milliseconds
+
+    // Updating the user document with the reset token and expiry
+    await userCollection.updateOne(
+      { email: useremail },
+      { $set: { resetPasswordToken: token, resetPasswordExpires: tokenExpiry } }
+    );
+
+    // Set up Nodemailer transport
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS  
+      }
+    });
+
+    // Constructing the reset URL
+    const resetURL = `http://${req.headers.host}/reset/${token}`;
+
+    // Send the email with the reset link
+    const mailOptions = {
+      to: useremail,
+      from: process.env.EMAIL_USER,
+      subject: 'Password Reset',
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+             Please click on the following link, or paste this into your browser to complete the process:\n\n
+             ${resetURL}\n\n
+             If you did not request this, please ignore this email and your password will remain unchanged.\n`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200); 
+    res.render("resetPasswordMessage");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
+});
+
+app.get('/reset/:token', async (req, res) => {
+  try {
+    const user = await userCollection.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() } // Ensure the token has not expired
+    });
+
+    if (!user) {
+      res.status(400);
+      res.render("passwordResetExpired");
+    }
+
+    // Render a form to set the new password
+    res.render('resetPassword', { token: req.params.token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
+});
+
+app.post('/resetPassword/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).send("Passwords do not match.");
+  }
+
+  try {
+    const user = await userCollection.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).send("Password reset token is invalid or has expired.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await userCollection.updateOne(
+      { email: user.email },
+      {
+        $set: { password: hashedPassword },
+        $unset: { resetPasswordToken: "", resetPasswordExpires: "" }
+      }
+    );
+
+    res.status(200).render("passwordResetSuccess");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
 });
 
 app.post("/loggingIn", async (req, res) => {
@@ -308,7 +379,9 @@ app.post("/loggingIn", async (req, res) => {
   .project({ 
       username: 1, 
       password: 1, 
-      email: 1, 
+      email: 1,
+      resetPasswordToken: 1,
+      resetPasswordExpires: 1, 
       savedDrafts: 1, 
       savedPosts: 1, 
       userPosts: 1
@@ -334,6 +407,8 @@ app.post("/loggingIn", async (req, res) => {
     console.log("Session: " + req.session.loggedIn);
     req.session.username = result[0].username;
     req.session.email = result[0].email;
+    req.session.resetPasswordToken = result[0].resetPasswordToken;
+    req.session.resetPasswordExpires = result[0].resetPasswordExpires;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
