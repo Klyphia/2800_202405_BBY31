@@ -1,0 +1,81 @@
+<%- include('templates/header.ejs') %>
+
+      <style>
+        .navbar {
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        .navbar-brand img {
+          height: 10vh;
+          border: none;
+          margin: 0;
+        }
+    
+        .profile-pic {
+          width: 150px;
+          height: 150px;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+    
+        .grid-row {
+          margin-bottom: 20px;
+        }
+      </style>
+
+
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="profile-card text-center">
+              <img src="/images/profile-pictures/profile-pic-0.jpg" class="profile-pic" alt="Profile Picture">
+              <h2 class="mt-3">Username: <%= username %></h2>
+              <h2 class="mt-3">Email: <%= email %></h2>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="grid-row">
+              <div class="grid-col btn btn-block bg-light">
+                <h3>User's Posts</h3>
+                <!-- Add your user's posts grid here -->
+              </div>
+            </div>
+            <div class="grid-row">
+              <div class="grid-col btn btn-block bg-light">
+                <h3>Saved Drafts</h3>
+                <!-- Add your saved drafts grid here -->
+              </div>
+            </div>
+            <div class="grid-row">
+              <div class="grid-col btn btn-block bg-light">
+                <h3>Saved Posts</h3>
+                <!-- Add your saved posts grid here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <script>
+        // Randomly select a profile picture
+        const profilePictures = [
+            'profile_1.png',
+            'profile_2.png',
+            'profile_3.png',
+            'profile_4.png',
+            'profile_5.png',
+            'profile_6.png',
+            'profile_7.png',
+            'profile_8.png'
+        ];
+
+        const randomPictureIndex = Math.floor(Math.random() * profilePictures.length);
+        const randomPicture = profilePictures[randomPictureIndex];
+
+        console.log(randomPicture);
+        document.querySelector('.profile-pic').src = `/images/profile-pictures/${randomPicture}`;
+    </script>
+
+    <%- include('templates/footer.ejs') %>

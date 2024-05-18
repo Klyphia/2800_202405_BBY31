@@ -1,0 +1,78 @@
+<%- include('templates/headerNotLogged.ejs') %>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+</head>
+<body>
+  <div class="container">
+    <h2>Sign Up</h2>
+    <form id="signupForm" action="/submitSignUp" method="POST">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+      <div id="errorMessages" class="error-messages"></div>
+      <button type="submit">Sign Up</button>
+    </form>
+    <button type="submit" onclick="window.location.href='/passwordReset'">Forgot Password?</button>
+
+  </div>
+
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const email = document.getElementById('email').value;
+
+
+  try {
+    const response = await fetch('/submitSignUp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password, email })
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.error);
+    }
+
+    const result = await response.json();
+    window.location.href = '/profile';
+  } catch (error) {
+    const errorMessagesDiv = document.getElementById('errorMessages');
+    errorMessagesDiv.innerHTML = '';
+
+    if (Array.isArray(error.message)) {
+      error.message.forEach(msg => {
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = msg;
+        errorMessagesDiv.appendChild(errorMessage);
+      });
+    } else {
+      const errorMessage = document.createElement('p');
+      errorMessage.textContent = error.message;
+      errorMessagesDiv.appendChild(errorMessage);
+    }
+  }
+});
+
+  </script>
+</body>
+</html>
+
+<%- include('templates/footer.ejs') %>

@@ -1,0 +1,30 @@
+{
+  "name": "comp2800-bby31",
+  "version": "1.0.0",
+  "description": "<<<<<<< HEAD\r <html>\r  <body>\r ## About Us <br>\r Team Name: BBY-31 <br>\r Team Members: \r <ul>\r     <li>Andre</li>\r     <li>Ben</li>\r     <li>Bill</li>\r     <li>Calvin</li>\r     <li>Kyle</li>\r   </ul>\r  </body>\r </html>\r =======\r # COMP2800_BBY_31",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "hbs": "^4.2.0",
+    "joi": "^17.13.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.5",
+    "node": "^20.13.1",
+    "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.0",
+    "utils": "^0.3.1"
+  }
+}
