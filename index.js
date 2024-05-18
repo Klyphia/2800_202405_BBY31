@@ -214,54 +214,9 @@ app.post("/submitSignUp", async (req, res) => {
       username: username,
       password: hashedPassword,
       email: email, // changed to include email
-      savedDrafts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ],
-      savedPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ],
-      userPosts: [
-        {
-          postId: ObjectId,
-          postTitle: String,
-          postTag: String,
-          postUploadImage: null || true, // change this later!!!!
-          postContent: String,
-          comments: [
-            {
-              commenter: String, // Username of the commenter
-              comment: String,
-              createdAt: Date // Timestamp of when the comment was made
-            }
-          ]
-        }
-      ]
+      savedDrafts: [],
+      savedPosts: [],
+      userPosts: []
     });
 
     console.log("Inserted user");
