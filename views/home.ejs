@@ -1,8 +1,7 @@
 <%- include('templates/header.ejs') %>
 
-<<<<<<< HEAD
-<main>
-    <section class="daily-quote">
+<main class="d-flex flex-column justify-content-between" style="min-height: 100vh;">
+    <section class="daily-quote text-center pb-5">
         <h2>Daily Quote</h2>
         <p id="quote"></p>
         <script>
@@ -18,36 +17,23 @@
         </script>
     </section>
 
-    <section class="grid-container">
-        <h2>Grid</h2>
+    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
+        <h2 class="text-center">Recent Posts</h2>
         <div class="row">
-            <div class="col-md-4">
-                <p>Placeholder text 1</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 2</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 3</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <p>Placeholder text 4</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 5</p>
-            </div>
-            <div class="col-md-4">
-                <p>Placeholder text 6</p>
-            </div>
+            <% storyPosts.forEach(function(post) { %>
+                <div class="col-md-4 mb-4">
+                    <a href="/post/<%= post._id %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= post.postTitle %></h5>
+                                <p class="card-text"><%= post.postTag %></p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }); %>
         </div>
     </section>
 </main>
 
 <%- include('templates/footer.ejs') %>
-=======
-hello world
-
-<%- include('templates/footer.ejs') %>
->>>>>>> createPost_features

@@ -4,6 +4,8 @@ const express = require("express");
 require("dotenv").config();
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const { ObjectId } = require('mongodb');
+const multer = require('multer');
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
 const nodemailer = require('nodemailer');
@@ -59,8 +61,8 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
-    console.log('Going to landing page.')
-    res.render('landingPage');
+    console.log('Going to login.')
+    res.render('login');
   } else {
     next();
   }
@@ -77,7 +79,10 @@ app.set("view engine", "ejs");
 
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
-  res.render("home");
+  const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
+  const storyPosts = userPostsArray.flatMap(user => user.userPosts);
+  storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
+  res.render("home", {storyPosts: storyPosts});
 });
 
 // Route for creating user post
@@ -85,10 +90,57 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   res.render("createPost");
 });
 
-app.post("/submitPost", sessionValidation, async (req, res) => {
+const upload = multer();
+
+app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postLink, commentVisibility, postContent } = req.body;
+    const { postTitle, postTag, postUploadImage, postLink, postContent } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true';
+    const username = req.session.username;
+    const currentDate = new Date();
+
+    if (!postTitle || !postContent || !postTag) {
+      // Redirect back to createPost page with error message as query parameter
+      return res.redirect("/createPost?error=Missing%20Title/Tag/Content");
+    }
+
+    if (postTitle === null || postContent === null || postTag === null) {
+      return res.render("createPost", { invalidPosting: invalidPosting });
+    };
+
+    // Create a post object
+    const post = {
+      postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
+      postTitle: postTitle,
+      postTag: postTag,
+      postUploadImage: postUploadImage,
+      postLink: postLink,
+      commentVisibility: commentVisibility,
+      postContent: postContent,
+      currentDate: currentDate,
+      comments: [] // Initialize an empty comments array for the post
+    };
+
+    console.log(post);
+    // Update user document in the database to add the new post to userPosts array
+    await userCollection.updateOne(
+      { username: username },
+      { $push: { userPosts: post } }
+    );
+
+    res.redirect("/postConfirmation"); // Redirect the confirmation page
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
+  try {
+    // Get form data from request body
+    const { postTitle, postTag, postUploadImage, postLink, postContent } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true';
     const username = req.session.username;
 
     // Create a post object
@@ -103,11 +155,15 @@ app.post("/submitPost", sessionValidation, async (req, res) => {
       comments: [] // Initialize an empty comments array for the post
     };
 
+    console.log(post);
     // Update user document in the database to add the new post to userPosts array
     await userCollection.updateOne(
       { username: username },
-      { $push: { userPosts: post } }
+      { $push: { savedDrafts: post } }
     );
+
+    const user = await userCollection.findOne({ username: username });
+    console.log(`Number of saved drafts: ${user.savedDrafts.length}`);
 
     res.redirect("/postConfirmation"); // Redirect the confirmation page
   } catch (error) {
@@ -170,7 +226,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
   }
 });
 
-app.get("/journal", (req, res) => {
+app.get("/journal", sessionValidation, async (req, res) => {
   res.render("journal");
 });
 
@@ -270,9 +326,12 @@ app.post("/resetPassword", async (req, res) => {
     // Set up Nodemailer transport
     const transporter = nodemailer.createTransport({
       service: 'gmail',
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // true of 465, false for all else
       auth: {
         user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS  
+        pass: process.env.APP_PASS  
       }
     });
 
@@ -290,7 +349,16 @@ app.post("/resetPassword", async (req, res) => {
              If you did not request this, please ignore this email and your password will remain unchanged.\n`
     };
 
-    await transporter.sendMail(mailOptions);
+    const sendMail = async (transporter, mailOptions) => {
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email has been sent!');
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    sendMail(transporter, mailOptions);
 
     res.status(200); 
     res.render("resetPasswordMessage");
@@ -313,7 +381,7 @@ app.get('/reset/:token', async (req, res) => {
     }
 
     // Render a form to set the new password
-    res.render('resetPassword', { token: req.params.token });
+    res.render('passwordResetForm', { token: req.params.token });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error.");
@@ -337,7 +405,7 @@ app.post('/resetPassword/:token', async (req, res) => {
     if (!user) {
       return res.status(400).send("Password reset token is invalid or has expired.");
     }
-
+    console.log("User found:", user.email);
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await userCollection.updateOne(
@@ -348,7 +416,7 @@ app.post('/resetPassword/:token', async (req, res) => {
       }
     );
 
-    res.status(200).render("passwordResetSuccess");
+    res.status(200).render('passwordResetSuccess');
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error.");
@@ -442,6 +510,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
   } = result;
 
   res.render("profile", { 
+    username,
     savedDrafts, 
     savedPosts, 
     userPosts });

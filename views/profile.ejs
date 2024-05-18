@@ -1,5 +1,59 @@
 <%- include('templates/header.ejs') %>
 
-profile Page
+<main class="d-flex flex-column justify-content-between" style="min-height: 100vh;">
+    <section class="daily-quote text-center pb-5">
+        <h2 class="text-center">Welcome <%= username %>!</h2>
+        <p id="quote"></p>
+        <script>
+            const quotes = [
+                "Quote 1",
+                "Quote 2",
+                "Quote 3",
+                "Quote 4",
+                "Quote 5"
+            ];
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            document.getElementById("quote").textContent = quotes[randomIndex];
+        </script>
+        <a href="/logout" class="btn btn-primary text-center">Sign out</a>
+    </section>
+
+    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
+        <div class="row">
+           
+                <div class="col-md-4 mb-4">
+                    <a href="#" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Saved Drafts</h5>
+                                <p class="card-text">(<%= savedDrafts.length %>)</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="#" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Saved Posts</h5>
+                                <p class="card-text">(<%= savedPosts.length %>)</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="#" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Your Posts</h5>
+                                <p class="card-text">(<%= userPosts.length %>)</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+         
+        </div>
+    </section>
+</main>
 
 <%- include('templates/footer.ejs') %>
