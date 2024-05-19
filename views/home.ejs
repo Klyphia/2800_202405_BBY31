@@ -1,16 +1,14 @@
+<%- include('templates/header.ejs') %>
 <head>
-    <title>Home Page</title>
-    <link rel="stylesheet" href="public/public/stylesheets/home.css">
+    <link rel="stylesheet" href="/style/home.css">
 </head>
-
 <body>
-        <%- include('templates/header.ejs') %>
             <!-- A button to open the popup form -->
             <button class="open-button" onclick="openForm()">Open Form</button>
 
             <!-- The form -->
             <div class="form-popup" id="myForm">
-                <form action="/action_page.php" class="form-container">
+                <form class="form-container">
                     <h1>How are you feeling today?</h1>
 
                     <div class="slidecontainer">
@@ -37,31 +35,24 @@
                 </script>
             </section>
 
-            <section class="grid-container">
-                <h2>Grid</h2>
-                <div class="row">
-                    <div class="col-md-4">
-                        <p>Placeholder text 1</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>Placeholder text 2</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>Placeholder text 3</p>
-                    </div>
+    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
+        <h2 class="text-center">Recent Posts</h2>
+        <div class="row">
+            <% storyPosts.forEach(function(post) { %>
+                <div class="col-md-4 mb-4">
+                    <a href="/post/<%= post._id %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= post.postTitle %></h5>
+                                <p class="card-text"><%= post.postTag %></p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <p>Placeholder text 4</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>Placeholder text 5</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>Placeholder text 6</p>
-                    </div>
-                </div>
-            </section>
+            <% }); %>
+        </div>
+    </section>
+    
     <script>
         function openForm() {
             document.getElementById("myForm").style.display = "block";
@@ -79,6 +70,6 @@
             output.innerHTML = this.value;
         }
     </script>
-
-    <%- include('templates/footer.ejs') %>
 </body>
+
+<%- include('templates/footer.ejs') %>
