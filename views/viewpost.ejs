@@ -1,0 +1,58 @@
+<%- include('templates/header.ejs') %>
+<head>
+    <link rel="stylesheet" href="/style/viewpost.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .mt-custom {
+            margin-top: -200px !important; /* Adjusted to move up by 200 pixels */
+        }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+    <div class="container mt-custom">
+        <div class="row">
+            <!-- Post Details -->
+            <div class="col-md-12 mb-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title"><%= postTitle %></h1>
+                        <p class="card-text"><%= postTag %></p>
+                        <% if (postUploadImage) { %>
+                            <img src="<%= postUploadImage %>" alt="No image" class="img-fluid mb-3">
+                        <% } %>
+                        <% if (postLink) { %>
+                            <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
+                        <% } %>
+                        <p class="card-text"><%= postContent %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <% if (commentVisibility === 'true') { %>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title">Comments</h2>
+                            <% comments.forEach(comment => { %>
+                                <div class="comment mb-3">
+                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comments %></p>
+                                    <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+<%- include('templates/footer.ejs') %>

@@ -4,63 +4,64 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data">
+                <!-- Hidden field for postID -->
+                <input type="hidden" id="postID" name="postID" value="<%= postID %>">
+
                 <!-- Other form fields for post title, tag, and content -->
                 <label for="postTitle">Title:</label>
-                <input type="text" id="postTitle" name="postTitle" required>
+                <input type="text" id="postTitle" name="postTitle" value="<%= postTitle %>" required>
                 <br>
                 
                 <label for="postTag">Tag:</label>
                 <select id="postTag" name="postTag" required>
-                    <option value="#Optimistic">#Optimistic</option>
-                    <option value="#Happy">#Happy</option>
-                    <option value="#Recovery">#Recovery</option>
-                    <option value="#Gloomy">#Gloomy</option>
-                    <option value="#Trying_Something_New">#Trying Something New</option>
+                    <option value="#Optimistic" <%= postTag === '#Optimistic' ? 'selected' : '' %>>#Optimistic</option>
+                    <option value="#Happy" <%= postTag === '#Happy' ? 'selected' : '' %>>#Happy</option>
+                    <option value="#Recovery" <%= postTag === '#Recovery' ? 'selected' : '' %>>#Recovery</option>
+                    <option value="#Gloomy" <%= postTag === '#Gloomy' ? 'selected' : '' %>>#Gloomy</option>
+                    <option value="#Trying_Something_New" <%= postTag === '#Trying_Something_New' ? 'selected' : '' %>>#Trying Something New</option>
                 </select>
                 <br>
               
                 <!-- Input field for uploading image -->
                 <label for="postImage">Upload Image:</label>
-                <input type="file" id="postUploadImage" name="postUploadImage">
+                <input type="file" id="postUploadImage" name="postUploadImage" value="<%= postUploadImage %>">
                 <br>
               
                 <!-- Input field for sharing a link -->
                 <label for="postLink">Share Link:</label>
-                <input type="text" id="postLink" name="postLink">
+                <input type="text" id="postLink" name="postLink" value="<%= postLink %>">
                 <br>
 
-    <!-- Checkbox for making comments visible -->
-    <label for="makeCommentsVisible">Make Comments Visible:</label>
-    <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true">
-    <br>
-  
-    <label for="postContent">Content:</label>
-    <textarea id="postContent" name="postContent" rows="4" required></textarea>
-    <br>
-  
-    <!-- Submit button -->
-    <button type="submit">Submit Post</button>
-    <button type="submit">Save Draft</button>
-  </form>
-
+                <!-- Checkbox for making comments visible -->
+                <label for="makeCommentsVisible">Make Comments Visible:</label>
+                <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true" <%= commentVisibility ? 'checked' : '' %>>
+                <br>
+            
+                <label for="postContent">Content:</label>
+                <textarea id="postContent" name="postContent" rows="4" required><%= postContent %></textarea>
+                <br>
+            
+                <!-- Submit button -->
+                <button type="submit" id="submitPostButton">Submit Post</button>
+                <button type="button" id="saveDraftButton">Save Draft</button> <!-- Change type to button -->
+            </form>
         </div>
         <% if (typeof error !== 'undefined') { %>
             <p><%= error %></p>
         <% } %>
-          
     </div>
 </div>
 
 <script>
-document.getElementById('submitPostButton').addEventListener('click', function() {
-    document.getElementById('postForm').action = '/submitPost';
-    document.getElementById('postForm').submit();
-});
+    document.getElementById('submitPostButton').addEventListener('click', function() {
+        document.getElementById('postForm').action = '/submitPost';
+        document.getElementById('postForm').submit();
+    });
 
-document.getElementById('saveDraftButton').addEventListener('click', function() {
-    document.getElementById('postForm').action = '/savePost';
-    document.getElementById('postForm').submit();
-});
+    document.getElementById('saveDraftButton').addEventListener('click', function() {
+        document.getElementById('postForm').action = '/savePost';
+        document.getElementById('postForm').submit();
+    });
 </script>
 
 <%- include('templates/footer.ejs') %>
