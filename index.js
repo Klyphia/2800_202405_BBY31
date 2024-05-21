@@ -9,6 +9,8 @@ const multer = require('multer');
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
 const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
+const path = require('path');
 const crypto = require('crypto');
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
@@ -49,6 +51,9 @@ app.use(
 
 app.use(express.static(__dirname+'/public'));
 
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
 function isValidSession(req) {
   if (req.session.loggedIn) {
     return true;
@@ -84,7 +89,38 @@ app.get("/", sessionValidation, async (req, res) => {
 
 // Route for creating user post
 app.get("/createPost", sessionValidation, async (req, res) => {
-  res.render("createPost");
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+
+  // Retrieve query parameters
+  const { title, tag, image, link, content, comments, visibility, postID } = req.query;
+
+  // Decode URI components and parse comments if available
+  const decodedTitle = title ? decodeURIComponent(title) : '';
+  const decodedTag = tag ? decodeURIComponent(tag) : '';
+  const decodedImage = image ? decodeURIComponent(image) : '';
+  const decodedLink = link ? decodeURIComponent(link) : '';
+  const decodedContent = content ? decodeURIComponent(content) : '';
+  const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
+  const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
+  const decodedPostID = postID ? decodeURIComponent(postID) : '';
+
+  // Render createPost.ejs with default or provided values
+  res.render('createPost', {
+    postTitle: decodedTitle,
+    postTag: decodedTag,
+    postUploadImage: decodedImage,
+    postLink: decodedLink,
+    postContent: decodedContent,
+    comments: parsedComments,
+    commentVisibility: decodedVisibility,
+    postID: postID
+  });
 });
 
 const upload = multer();
@@ -135,34 +171,42 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
 
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
-    // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postLink, postContent } = req.body;
+    const { postTitle, postTag, postUploadImage, postLink, postContent, postID } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true';
     const username = req.session.username;
 
     // Create a post object
     const post = {
-      postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
-      postTitle: postTitle,
-      postTag: postTag,
-      postUploadImage: postUploadImage,
-      postLink: postLink,
-      commentVisibility: commentVisibility,
-      postContent: postContent,
+      postId: postID ? new ObjectId(postID) : new ObjectId(), // Use existing postId if provided
+      postTitle,
+      postTag,
+      postUploadImage,
+      postLink,
+      commentVisibility,
+      postContent,
       comments: [] // Initialize an empty comments array for the post
     };
 
     console.log(post);
-    // Update user document in the database to add the new post to userPosts array
-    await userCollection.updateOne(
-      { username: username },
-      { $push: { savedDrafts: post } }
-    );
 
-    const user = await userCollection.findOne({ username: username });
+    if (postID) {
+      // If postId exists, update the existing draft
+      await userCollection.updateOne(
+        { username, "savedDrafts.postId": new ObjectId(postID) },
+        { $set: { "savedDrafts.$": post } }
+      );
+    } else {
+      // If no postId, insert a new draft
+      await userCollection.updateOne(
+        { username },
+        { $push: { savedDrafts: post } }
+      );
+    }
+
+    const user = await userCollection.findOne({ username });
     console.log(`Number of saved drafts: ${user.savedDrafts.length}`);
 
-    res.redirect("/postConfirmation"); // Redirect the confirmation page
+    res.redirect("/postConfirmation"); // Redirect to confirmation page
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -170,22 +214,18 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 });
 
 // Route to display existing story posts
-app.get("/viewposts", async (req, res) => {
-  const loggedIn = req.session.loggedIn;
-  try {
-    // Fetch userPosts array from all documents
-    const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
-
-    // Extract userPosts from each document and flatten into a single array (storyPosts)
-    const storyPosts = userPostsArray.flatMap(user => user.userPosts);
-
-    // render story/posts onto the viewpost page
-    res.render("viewposts", { storyPosts: storyPosts, loggedIn: loggedIn });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+app.get("/viewposts", sessionValidation, async (req, res) => {
+  const {title, tag, image, link, content, comments, visibility} = req.query;
+  const parsedComments = JSON.parse(decodeURIComponent(comments));
+  res.render('viewpost', {
+        postTitle: decodeURIComponent(title),
+        postTag: decodeURIComponent(tag),
+        postUploadImage: decodeURIComponent(image),
+        postLink: decodeURIComponent(link),
+        postContent: decodeURIComponent(content),
+        comments: parsedComments,
+        commentVisibility: decodeURIComponent(visibility)
+  });
 });
 
 // Route to handle comment submission
@@ -514,6 +554,18 @@ app.get("/profile", sessionValidation, async (req, res) => {
     userPosts,
     username: req.session.username,
     email: req.session.email});
+});
+
+app.get("/savedDrafts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { savedDrafts } = result;
+  res.render("userDraftsPage", { savedDrafts });
 });
 
 app.listen(port, () => {

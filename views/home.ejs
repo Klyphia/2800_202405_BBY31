@@ -3,44 +3,48 @@
     <link rel="stylesheet" href="/style/home.css">
 </head>
 <body>
-            <!-- A button to open the popup form -->
-            <button class="open-button" onclick="openForm()">Open Form</button>
+    <!-- A button to open the popup form -->
+    <button class="open-button" onclick="openForm()">Open Form</button>
 
-            <!-- The form -->
-            <div class="form-popup" id="myForm">
-                <form class="form-container">
-                    <h1>How are you feeling today?</h1>
+    <!-- The form -->
+    <div class="form-popup" id="myForm">
+        <form class="form-container">
+            <h1>How are you feeling today?</h1>
 
-                    <div class="slidecontainer">
-                        <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-                    </div>
-
-                    <button type="submit" class="btn">Submit</button>
-                    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-                </form>
+            <div class="slidecontainer">
+                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
             </div>
-            <section class="daily-quote">
-                <h2>Daily Quote</h2>
-                <p id="quote"></p>
-                <script>
-                    const quotes = [
-                        "Quote 1",
-                        "Quote 2",
-                        "Quote 3",
-                        "Quote 4",
-                        "Quote 5"
-                    ];
-                    const randomIndex = Math.floor(Math.random() * quotes.length);
-                    document.getElementById("quote").textContent = quotes[randomIndex];
-                </script>
-            </section>
+
+            <button type="submit" class="btn">Submit</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+        </form>
+    </div>
+
+    <!-- Centering the section with class "daily-quote" -->
+    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <section class="daily-quote">
+            <h2>Daily Quote</h2>
+            <p id="quote"></p>
+            <script>
+                const quotes = [
+                    "Quote 1",
+                    "Quote 2",
+                    "Quote 3",
+                    "Quote 4",
+                    "Quote 5"
+                ];
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                document.getElementById("quote").textContent = quotes[randomIndex];
+            </script>
+        </section>
+    </div>
 
     <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
         <h2 class="text-center">Recent Posts</h2>
         <div class="row">
             <% storyPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4">
-                    <a href="/post/<%= post._id %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
