@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    /* padding-bottom: 100px; Adjust according to the height of the footer */
+    min-height: 100vh;
+    /* position: relative; */
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    /* position: absolute; */
+    /* bottom: 0; */
+    width: 100%;
+}
+
+.nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+}
+
+.nav-logo {
+    width: 36px;
+    height: 36px;
+}
