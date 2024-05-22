@@ -33,6 +33,10 @@ var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
+const randomCollection = database.db(mongodb_database).collection("random_gen_collection");
+
+const moodHistoryCollection = database.db(mongodb_database).collection("mood_history");
+
 var mongoStore = MongoStore.create({
   mongoUrl,
   crypto: {
