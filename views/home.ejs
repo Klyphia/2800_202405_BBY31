@@ -7,12 +7,13 @@
     <button class="open-button" onclick="openForm()">Open Form</button>
 
     <!-- The form -->
-    <div class="form-popup" id="myForm">
+    <div class="form-popup" id="myForm" style="display:none;"> <!-- Ensure the form is hidden by default -->
         <form class="form-container">
             <h1>How are you feeling today?</h1>
 
             <div class="slidecontainer">
                 <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+                <p>Value: <span id="demo"></span></p> <!-- Display the slider value -->
             </div>
 
             <button type="submit" class="btn">Submit</button>
@@ -21,7 +22,8 @@
     </div>
 
     <!-- Centering the section with class "daily-quote" -->
-    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <!-- style height is for changing the size of the webpage -->    
+    <div class="container d-flex justify-content-center align-items-center" style="height: 35vh;">
         <section class="daily-quote">
             <h2>Daily Quote</h2>
             <p id="quote"></p>
@@ -41,9 +43,24 @@
 
     <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
         <h2 class="text-center">Recent Posts</h2>
-        <div class="row">
+        <!-- Filter Dropdown -->
+        <div class="text-center mb-4">
+            <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
+            <select id="postTagFilter">
+                <option value="all">All</option>
+                <% 
+                    // Extract unique postTags
+                    const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
+                    uniqueTags.forEach(function(tag) { 
+                %>
+                    <option value="<%= tag %>"><%= tag %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div class="row" id="postsContainer">
             <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
                     <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
@@ -65,6 +82,7 @@
         function closeForm() {
             document.getElementById("myForm").style.display = "none";
         }
+
         var slider = document.getElementById("myRange");
         var output = document.getElementById("demo");
         output.innerHTML = slider.value; // Display the default slider value
@@ -73,6 +91,21 @@
         slider.oninput = function () {
             output.innerHTML = this.value;
         }
+
+        // Tag filter
+        document.getElementById('postTagFilter').addEventListener('change', function() {
+            const selectedTag = this.value;
+            const posts = document.querySelectorAll('.post-card');
+
+            posts.forEach(post => {
+                const postTag = post.getAttribute('data-post-tag');
+                if (selectedTag === 'all' || postTag === selectedTag) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 
