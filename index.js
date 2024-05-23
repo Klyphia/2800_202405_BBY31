@@ -4,14 +4,14 @@ const express = require("express");
 require("dotenv").config();
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const { ObjectId } = require('mongodb');
-const multer = require('multer');
+const { ObjectId } = require("mongodb");
+const multer = require("multer");
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
-const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
-const path = require('path');
-const crypto = require('crypto');
+const nodemailer = require("nodemailer");
+const bodyParser = require("body-parser");
+const path = require("path");
+const crypto = require("crypto");
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
@@ -50,10 +50,10 @@ app.use(
   })
 );
 
-app.use(express.static(__dirname+'/public'));
+app.use(express.static(__dirname + "/public"));
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 function isValidSession(req) {
   if (req.session.loggedIn) {
@@ -64,8 +64,8 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
-    console.log('Going to login.')
-    res.render('login');
+    console.log("Going to login.");
+    res.render("login");
   } else {
     next();
   }
@@ -82,10 +82,12 @@ app.set("view engine", "ejs");
 
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
-  const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
-  const storyPosts = userPostsArray.flatMap(user => user.userPosts);
+  const userPostsArray = await userCollection
+    .find({}, { projection: { userPosts: 1 } })
+    .toArray();
+  const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
   storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
-  res.render("home", {storyPosts: storyPosts});
+  res.render("home", { storyPosts: storyPosts });
 });
 
 // Route for creating user post
@@ -99,20 +101,23 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   }
 
   // Retrieve query parameters
-  const { title, tag, image, link, content, comments, visibility, postID } = req.query;
+  const { title, tag, image, link, content, comments, visibility, postID } =
+    req.query;
 
   // Decode URI components and parse comments if available
-  const decodedTitle = title ? decodeURIComponent(title) : '';
-  const decodedTag = tag ? decodeURIComponent(tag) : '';
-  const decodedImage = image ? decodeURIComponent(image) : '';
-  const decodedLink = link ? decodeURIComponent(link) : '';
-  const decodedContent = content ? decodeURIComponent(content) : '';
-  const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
-  const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
-  const decodedPostID = postID ? decodeURIComponent(postID) : '';
+  const decodedTitle = title ? decodeURIComponent(title) : "";
+  const decodedTag = tag ? decodeURIComponent(tag) : "";
+  const decodedImage = image ? decodeURIComponent(image) : "";
+  const decodedLink = link ? decodeURIComponent(link) : "";
+  const decodedContent = content ? decodeURIComponent(content) : "";
+  const parsedComments = comments
+    ? JSON.parse(decodeURIComponent(comments))
+    : [];
+  const decodedVisibility = visibility ? decodeURIComponent(visibility) : "";
+  const decodedPostID = postID ? decodeURIComponent(postID) : "";
 
   // Render createPost.ejs with default or provided values
-  res.render('createPost', {
+  res.render("createPost", {
     postTitle: decodedTitle,
     postTag: decodedTag,
     postUploadImage: decodedImage,
@@ -120,7 +125,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
     postContent: decodedContent,
     comments: parsedComments,
     commentVisibility: decodedVisibility,
-    postID: postID
+    postID: postID,
   });
 });
 
@@ -129,8 +134,9 @@ const upload = multer();
 app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postLink, postContent } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const { postTitle, postTag, postUploadImage, postLink, postContent } =
+      req.body;
+    const commentVisibility = req.body.commentVisibility === "true";
     const username = req.session.username;
     const currentDate = new Date();
 
@@ -141,7 +147,7 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
 
     if (postTitle === null || postContent === null || postTag === null) {
       return res.render("createPost", { invalidPosting: invalidPosting });
-    };
+    }
 
     // Create a post object
     const post = {
@@ -153,7 +159,7 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
       commentVisibility: commentVisibility,
       postContent: postContent,
       currentDate: currentDate,
-      comments: [] // Initialize an empty comments array for the post
+      comments: [], // Initialize an empty comments array for the post
     };
 
     console.log(post);
@@ -172,8 +178,15 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
 
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
-    const { postTitle, postTag, postUploadImage, postLink, postContent, postID } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const {
+      postTitle,
+      postTag,
+      postUploadImage,
+      postLink,
+      postContent,
+      postID,
+    } = req.body;
+    const commentVisibility = req.body.commentVisibility === "true";
     const username = req.session.username;
 
     // Create a post object
@@ -185,7 +198,7 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
       postLink,
       commentVisibility,
       postContent,
-      comments: [] // Initialize an empty comments array for the post
+      comments: [], // Initialize an empty comments array for the post
     };
 
     console.log(post);
@@ -216,16 +229,16 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
 // Route to display existing story posts
 app.get("/viewposts", sessionValidation, async (req, res) => {
-  const {title, tag, image, link, content, comments, visibility} = req.query;
+  const { title, tag, image, link, content, comments, visibility } = req.query;
   const parsedComments = JSON.parse(decodeURIComponent(comments));
-  res.render('viewpost', {
-        postTitle: decodeURIComponent(title),
-        postTag: decodeURIComponent(tag),
-        postUploadImage: decodeURIComponent(image),
-        postLink: decodeURIComponent(link),
-        postContent: decodeURIComponent(content),
-        comments: parsedComments,
-        commentVisibility: decodeURIComponent(visibility)
+  res.render("viewpost", {
+    postTitle: decodeURIComponent(title),
+    postTag: decodeURIComponent(tag),
+    postUploadImage: decodeURIComponent(image),
+    postLink: decodeURIComponent(link),
+    postContent: decodeURIComponent(content),
+    comments: parsedComments,
+    commentVisibility: decodeURIComponent(visibility),
   });
 });
 
@@ -249,13 +262,16 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
         userPost.comments.push({
           commenter: username,
           comment: comment,
-          createdAt: new Date()
+          createdAt: new Date(),
         });
       }
     });
 
     // Update the post in the database
-    await userCollection.updateOne({ "userPosts.postId": postId }, { $set: post });
+    await userCollection.updateOne(
+      { "userPosts.postId": postId },
+      { $set: post }
+    );
 
     res.status(200).json({ message: "Comment added successfully" });
   } catch (error) {
@@ -293,13 +309,15 @@ app.post("/submitSignUp", async (req, res) => {
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
     password: Joi.string().max(20).required(),
-    email: Joi.string().email().required() // changed to include email
+    email: Joi.string().email().required(), // changed to include email
   });
 
   const validationResult = schema.validate({ username, password, email });
 
   if (validationResult.error != null) {
-    const errorMessages = validationResult.error.details.map(detail => detail.message);
+    const errorMessages = validationResult.error.details.map(
+      (detail) => detail.message
+    );
     return res.status(400).json({ error: errorMessages });
   }
 
@@ -314,7 +332,7 @@ app.post("/submitSignUp", async (req, res) => {
       resetPasswordExpires: "",
       savedDrafts: [],
       savedPosts: [],
-      userPosts: []
+      userPosts: [],
     });
 
     console.log("Inserted user");
@@ -328,7 +346,6 @@ app.post("/submitSignUp", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 app.get("/login", (req, res) => {
   res.render("login");
@@ -350,7 +367,7 @@ app.post("/resetPassword", async (req, res) => {
     }
 
     // Generating a unique token
-    const token = crypto.randomBytes(20).toString('hex');
+    const token = crypto.randomBytes(20).toString("hex");
 
     // Setting token expiration time (1 hour from now)
     const tokenExpiry = Date.now() + 3600000; // 1 hour in milliseconds
@@ -363,14 +380,14 @@ app.post("/resetPassword", async (req, res) => {
 
     // Set up Nodemailer transport
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       host: "smtp.gmail.com",
       port: 587,
       secure: false, // true of 465, false for all else
       auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.APP_PASS  
-      }
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASS,
+      },
     });
 
     // Constructing the reset URL
@@ -380,25 +397,25 @@ app.post("/resetPassword", async (req, res) => {
     const mailOptions = {
       to: useremail,
       from: process.env.EMAIL_USER,
-      subject: 'Password Reset',
+      subject: "Password Reset",
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
              Please click on the following link, or paste this into your browser to complete the process:\n\n
              ${resetURL}\n\n
-             If you did not request this, please ignore this email and your password will remain unchanged.\n`
+             If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
     const sendMail = async (transporter, mailOptions) => {
       try {
         await transporter.sendMail(mailOptions);
-        console.log('Email has been sent!');
+        console.log("Email has been sent!");
       } catch (error) {
         console.error(error);
       }
-    }
+    };
 
     sendMail(transporter, mailOptions);
 
-    res.status(200); 
+    res.status(200);
     res.render("resetPasswordMessage");
   } catch (error) {
     console.error(error);
@@ -406,11 +423,11 @@ app.post("/resetPassword", async (req, res) => {
   }
 });
 
-app.get('/reset/:token', async (req, res) => {
+app.get("/reset/:token", async (req, res) => {
   try {
     const user = await userCollection.findOne({
       resetPasswordToken: req.params.token,
-      resetPasswordExpires: { $gt: Date.now() } // Ensure the token has not expired
+      resetPasswordExpires: { $gt: Date.now() }, // Ensure the token has not expired
     });
 
     if (!user) {
@@ -419,14 +436,14 @@ app.get('/reset/:token', async (req, res) => {
     }
 
     // Render a form to set the new password
-    res.render('passwordResetForm', { token: req.params.token });
+    res.render("passwordResetForm", { token: req.params.token });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error.");
   }
 });
 
-app.post('/resetPassword/:token', async (req, res) => {
+app.post("/resetPassword/:token", async (req, res) => {
   const { token } = req.params;
   const { password, confirmPassword } = req.body;
 
@@ -437,11 +454,13 @@ app.post('/resetPassword/:token', async (req, res) => {
   try {
     const user = await userCollection.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).send("Password reset token is invalid or has expired.");
+      return res
+        .status(400)
+        .send("Password reset token is invalid or has expired.");
     }
     console.log("User found:", user.email);
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -450,11 +469,11 @@ app.post('/resetPassword/:token', async (req, res) => {
       { email: user.email },
       {
         $set: { password: hashedPassword },
-        $unset: { resetPasswordToken: "", resetPasswordExpires: "" }
+        $unset: { resetPasswordToken: "", resetPasswordExpires: "" },
       }
     );
 
-    res.status(200).render('passwordResetSuccess');
+    res.status(200).render("passwordResetSuccess");
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error.");
@@ -466,13 +485,12 @@ app.post("/loggingIn", async (req, res) => {
   var password = req.body.password;
   // var email = req.body.email;
 
-
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
   });
 
-  const validationResult = schema.validate({ username, password});
+  const validationResult = schema.validate({ username, password });
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -481,18 +499,18 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-  .find({ username: username})
-  .project({ 
-      _id: 1,    
-      username: 1, 
-      password: 1, 
+    .find({ username: username })
+    .project({
+      _id: 1,
+      username: 1,
+      password: 1,
       email: 1,
       resetPasswordToken: 1,
-      resetPasswordExpires: 1, 
-      savedDrafts: 1, 
-      savedPosts: 1, 
-      userPosts: 1
-      })
+      resetPasswordExpires: 1,
+      savedDrafts: 1,
+      savedPosts: 1,
+      userPosts: 1,
+    })
     .toArray();
 
   if (result.length === 0) {
@@ -531,7 +549,6 @@ app.post("/loggingIn", async (req, res) => {
 });
 
 app.get("/profile", sessionValidation, async (req, res) => {
-
   const username = req.session.username;
   const email = req.session.email;
   console.log(email);
@@ -545,19 +562,16 @@ app.get("/profile", sessionValidation, async (req, res) => {
     return;
   }
 
-  const { 
-    savedDrafts, 
-    savedPosts, 
-    userPosts
-  } = result;
+  const { savedDrafts, savedPosts, userPosts } = result;
 
-  res.render("profile", { 
+  res.render("profile", {
     username,
-    savedDrafts, 
-    savedPosts, 
+    savedDrafts,
+    savedPosts,
     userPosts,
     username: req.session.username,
-    email: req.session.email});
+    email: req.session.email,
+  });
 });
 
 app.get("/savedDrafts", sessionValidation, async (req, res) => {
@@ -591,7 +605,7 @@ app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
       // If no document exists, create a new one
       await moodHistory.insertOne({
         userId: userId,
-        entries: [{ entry, timestamp }]
+        entries: [{ entry, timestamp }],
       });
     }
 
