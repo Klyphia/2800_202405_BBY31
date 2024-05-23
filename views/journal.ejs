@@ -1,17 +1,17 @@
 <%- include('templates/header.ejs') %>
     <h1>journal</h1>
-    <div class="row">
+    <div class="journal-container">
         <div class="col-sm-6 p-4">
-            <div class="card bg-dark text-white" style="height: 400px">
-                <img src="..." class="card-img" alt="...">
+            <div class="card bg-dark text-white journal-card" style="height: auto" id="newEntryCard">
+                <img src="/images/new_entry.jpg" class="card-img" alt="...">
                 <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
                     <h5 class="card-title text-center">New Entry</h5>
                 </div>
             </div>
         </div>
         <div class="col-sm-6 p-4">
-            <div class="card bg-dark text-white" style="height: 400px">
-                <img src="..." class="card-img" alt="...">
+            <div class="card bg-dark text-white journal-card" style="height: auto" id="viewEntriesCard">
+                <img src="/images/view_entry.jpg" class="card-img" alt="...">
                 <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
                     <h5 class="card-title text-center">View Entries</h5>
                 </div>
@@ -20,12 +20,86 @@
     </div>
     <div class="row">
         <div class="col-sm-6 p-4">
-            <div class="card bg-dark text-white" style="height: 400px">
-                <img src="..." class="card-img" alt="...">
+            <div class="card bg-dark text-white journal-card" style="height: auto">
+                <img src="/images/mood_history.jpg" class="card-img" alt="...">
                 <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
                     <h5 class="card-title text-center">Mood History</h5>
                 </div>
             </div>
         </div>
     </div>
-<%- include('templates/footer.ejs') %>
+
+    <div class="modal fade" id="journalModal" tabindex="-1" role="dialog" aria-labelledby="journalModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="journalModalLabel">New Journal Entry - <span id="currentDate"></span>
+                    </h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" id="journalText" rows="10"
+                        placeholder="Write your journal entry here..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveButton">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const newEntryCard = document.getElementById('newEntryCard');
+            const journalModal = new bootstrap.Modal(document.getElementById('journalModal'));
+            const currentDateSpan = document.getElementById('currentDate');
+            const journalText = document.getElementById('journalText');
+            const saveButton = document.getElementById('saveButton');
+
+            newEntryCard.addEventListener('click', function () {
+                const today = new Date().toLocaleDateString();
+                currentDateSpan.textContent = today;
+                journalModal.show();
+            });
+
+            viewEntriesCard.addEventListener('click', function () {
+                window.location.href = '/viewEntries';
+            });
+
+            saveButton.addEventListener('click', function () {
+                const entryText = journalText.value;
+                if (entryText.trim() === '') {
+                    alert('Please write something before saving.');
+                    return;
+                }
+                // Save the entry (e.g., send to server)
+                console.log('Saving journal entry:', entryText);
+                const entryData = {
+                    entry: entryText
+                };
+
+                fetch('/saveJournalEntry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(entryData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        alert('Journal entry saved successfully!');
+                        journalModal.hide();
+                        journalText.value = '';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving the journal entry.');
+                    });
+            });
+        });
+    </script>
+    <%- include('templates/footer.ejs') %>
