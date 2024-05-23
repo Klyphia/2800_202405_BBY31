@@ -4,8 +4,10 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data">
-                <!-- Hidden field for postID -->
+                <!-- Hidden field for postID, randonGenUsername, and randomAvatar -->
                 <input type="hidden" id="postID" name="postID" value="<%= postID %>">
+                <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
+                <input type="hidden" id="randomAvatar" name="randomAvatar" value="<%= randomAvatar %>">
 
                 <!-- Other form fields for post title, tag, and content -->
                 <label for="postTitle">Title:</label>

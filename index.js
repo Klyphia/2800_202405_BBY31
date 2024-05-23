@@ -83,6 +83,24 @@ app.use(express.urlencoded({ extended: false }));
 app.set("views", "./views"); // Specify the views directory
 app.set("view engine", "ejs");
 
+// inserting random data into random
+// const randomData = {
+//   avatar_array: ['examples/avatar1.png'], //tbd - root directory has to specified
+//   dailyQuotes: "",  //tbd
+//   randomUsernames: {
+//     animal: [""], //tbd
+//     color: [""] //tbd
+//   }
+// };
+
+// randomCollection.insertOne(randomData)
+// .then(result => {
+//   console.log(`Successfully inserted document: ${result.insertedId}`);
+// })
+// .catch(error => {
+//   console.log(`Failed to insert document: ${error}`);
+// });
+
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
   const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
@@ -102,10 +120,12 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   }
 
   // Retrieve query parameters
-  const { title, tag, image, link, content, comments, visibility, postID } = req.query;
+  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postID } = req.query;
 
   // Decode URI components and parse comments if available
   const decodedTitle = title ? decodeURIComponent(title) : '';
+  const decodedRandomUsername = randomUsername ? decodeURIComponent(randomUsername) : '';
+  const decodedRandomAvatar = randomAvatar ? decodeURIComponent(randomAvatar) : '';
   const decodedTag = tag ? decodeURIComponent(tag) : '';
   const decodedImage = image ? decodeURIComponent(image) : '';
   const decodedLink = link ? decodeURIComponent(link) : '';
@@ -114,16 +134,43 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
   const decodedPostID = postID ? decodeURIComponent(postID) : '';
 
-  // Render createPost.ejs with default or provided values
-  res.render('createPost', {
-    postTitle: decodedTitle,
-    postTag: decodedTag,
-    postUploadImage: decodedImage,
-    postLink: decodedLink,
-    postContent: decodedContent,
-    comments: parsedComments,
-    commentVisibility: decodedVisibility,
-    postID: postID
+  // define function to get random elements from an array
+  function getRandomElement(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  async function getRandomData(username, avatar) {
+    try {
+      const randomData = await randomCollection.findOne({});
+      if (!randomData) {
+        throw new Error('No random data found');
+      }
+
+      const randomGenUsername = username || getRandomElement(randomData.name.animal) + getRandomElement(randomData.name.color);
+      const randomAvatar = avatar || getRandomElement(randomData.avatar_array);
+
+      return { randomGenUsername, randomAvatar };
+    } catch (error) {
+      console.error(`Failed to retrieve random data ${error}`);
+      return { randomGenUsername: '', randomAvatar:'' };
+    }
+  }
+
+  // Use the function to get random data
+  getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
+  // Now you have randomUsername and randomAvatar, you can proceed with your logic
+    res.render('createPost', {
+      postTitle: decodedTitle,
+      randomGenUsername: randomGenUsername,
+      randomAvatar: randomAvatar,
+      postTag: decodedTag,
+      postUploadImage: decodedImage,
+      postLink: decodedLink,
+      postContent: decodedContent,
+      comments: parsedComments,
+      commentVisibility: decodedVisibility,
+      postID: decodedPostID
+    });
   });
 });
 
@@ -132,7 +179,7 @@ const upload = multer();
 app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postLink, postContent } = req.body;
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true';
     const username = req.session.username;
     const currentDate = new Date();
@@ -150,6 +197,8 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
     const post = {
       postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
       postTitle: postTitle,
+      randomGenUsername: randomGenUsername,
+      randomAvatar: randomAvatar,
       postTag: postTag,
       postUploadImage: postUploadImage,
       postLink: postLink,
@@ -175,7 +224,7 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
 
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
-    const { postTitle, postTag, postUploadImage, postLink, postContent, postID } = req.body;
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true';
     const username = req.session.username;
 
@@ -183,6 +232,8 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
     const post = {
       postId: postID ? new ObjectId(postID) : new ObjectId(), // Use existing postId if provided
       postTitle,
+      randomGenUsername,
+      randomAvatar,
       postTag,
       postUploadImage,
       postLink,
@@ -219,10 +270,12 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
 // Route to display existing story posts
 app.get("/viewposts", sessionValidation, async (req, res) => {
-  const {title, tag, image, link, content, comments, visibility} = req.query;
+  const {title, randomUsername, randomUserAvatar, tag, image, link, content, comments, visibility} = req.query;
   const parsedComments = JSON.parse(decodeURIComponent(comments));
   res.render('viewpost', {
         postTitle: decodeURIComponent(title),
+        randomUsername: decodeURIComponent(randomUsername),
+        randomAvatar: decodeURIComponent(randomUserAvatar),
         postTag: decodeURIComponent(tag),
         postUploadImage: decodeURIComponent(image),
         postLink: decodeURIComponent(link),
