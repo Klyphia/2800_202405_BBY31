@@ -32,6 +32,7 @@ const mongoUrl = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_ho
 var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
+const moodHistory = database.db(mongodb_database).collection("mood_history");
 
 var mongoStore = MongoStore.create({
   mongoUrl,
@@ -482,6 +483,7 @@ app.post("/loggingIn", async (req, res) => {
   const result = await userCollection
   .find({ username: username})
   .project({ 
+      _id: 1,    
       username: 1, 
       password: 1, 
       email: 1,
@@ -510,6 +512,7 @@ app.post("/loggingIn", async (req, res) => {
     console.log("correct password");
     req.session.loggedIn = true;
     console.log("Session: " + req.session.loggedIn);
+    req.session.userid = result[0]._id;
     req.session.username = result[0].username;
     req.session.email = result[0].email;
     req.session.resetPasswordToken = result[0].resetPasswordToken;
@@ -532,6 +535,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
   const username = req.session.username;
   const email = req.session.email;
   console.log(email);
+  console.log(req.session.userid);
 
   const result = await userCollection.findOne({ username });
 
@@ -566,6 +570,40 @@ app.get("/savedDrafts", sessionValidation, async (req, res) => {
   }
   const { savedDrafts } = result;
   res.render("userDraftsPage", { savedDrafts });
+});
+
+app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
+  try {
+    const userId = req.session.userid;
+    const { entry } = req.body; // Assuming these are the fields in your journal entry
+    const timestamp = new Date();
+
+    // Check if there's already a document in mood_history with the user ID
+    let userMoodHistory = await moodHistory.findOne({ userId: userId });
+
+    if (userMoodHistory) {
+      // If document exists, update it with the new entry
+      await moodHistory.updateOne(
+        { userId: userId },
+        { $push: { entries: { entry, timestamp } } }
+      );
+    } else {
+      // If no document exists, create a new one
+      await moodHistory.insertOne({
+        userId: userId,
+        entries: [{ entry, timestamp }]
+      });
+    }
+
+    res.status(200).json({ message: "Journal entry saved successfully" });
+  } catch (error) {
+    console.error("Error saving journal entry:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/viewEntries", sessionValidation, async (req, res) => {
+  res.render("viewEntries");
 });
 
 app.listen(port, () => {
