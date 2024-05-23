@@ -663,6 +663,22 @@ app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
   }
 });
 
+app.get('/getJournalEntries', sessionValidation, async (req, res) => {
+  const userId = req.session.userid;
+  console.log(userId);
+  try {
+    const user = await moodHistory.findOne({ userId: userId });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const entries = user.entries || []; // If 'entries' field does not exist, default to an empty array
+    res.json(entries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 app.get("/viewEntries", sessionValidation, async (req, res) => {
   res.render("viewEntries");
 });
