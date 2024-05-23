@@ -285,10 +285,12 @@ app.get("/viewposts", sessionValidation, async (req, res) => {
   });
 });
 
+
+
 // Route to handle comment submission
 app.post("/post/comment", sessionValidation, async (req, res) => {
   const { postId, comment } = req.body;
-  const username = req.session.username;
+  const username = req.session.randomUsername;
 
   try {
     // Find the post by postId
