@@ -226,7 +226,6 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
       { $push: { userPosts: post } }
     );
 
-    res.redirect("/home"); // Redirect the confirmation page
     window.alert("post succecssfully created")
   } catch (error) {
     console.error(error);
@@ -653,6 +652,18 @@ app.get("/savedPosts", sessionValidation, async (req, res) => {
   }
   const { savedPosts } = result;
   res.render("userSavedPostsPage", { savedPosts });
+});
+
+app.get("/userPosts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { userPosts } = result;
+  res.render("userPostsPage", { userPosts });
 });
 
 app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
