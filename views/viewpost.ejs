@@ -45,6 +45,7 @@
         
         <!-- Comments Section -->
         <% if (commentVisibility === 'true') { %>
+            <h4>Comments:</h4>
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
@@ -52,7 +53,7 @@
                             <h2 class="card-title">Comments</h2>
                             <% comments.forEach(comment => { %>
                                 <div class="comment mb-3">
-                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comments %></p>
+                                    <p><strong><%= comment.commenterUsername %>:</strong> <%= comment.comment %></p>
                                     <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
                                 </div>
                             <% }); %>
