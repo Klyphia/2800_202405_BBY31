@@ -1,79 +1,99 @@
 <%- include('templates/header.ejs') %>
-<head>
-    <link rel="stylesheet" href="/style/home.css">
-</head>
-<body>
-    <!-- A button to open the popup form -->
-    <button class="open-button" onclick="openForm()">Open Form</button>
 
-    <!-- The form -->
-    <div class="form-popup" id="myForm">
-        <form class="form-container">
-            <h1>How are you feeling today?</h1>
+    <head>
+        <link rel="stylesheet" href="/style/home.css">
+    </head>
 
-            <div class="slidecontainer">
-                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-            </div>
+    <body>
+        <!-- A button to open the popup form -->
+        <button class="open-button" onclick="openForm()">Open Form</button>
 
-            <button type="submit" class="btn">Submit</button>
-            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-        </form>
-    </div>
+        <!-- The form -->
+        <div class="form-popup" id="myForm">
+            <form class="form-container">
+                <div class="moodTitle">How are you feeling today?</div>
 
-    <!-- Centering the section with class "daily-quote" -->
-    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
-        <section class="daily-quote">
-            <h2>Daily Quote</h2>
-            <p id="quote"></p>
-            <script>
-                const quotes = [
-                    "Quote 1",
-                    "Quote 2",
-                    "Quote 3",
-                    "Quote 4",
-                    "Quote 5"
-                ];
-                const randomIndex = Math.floor(Math.random() * quotes.length);
-                document.getElementById("quote").textContent = quotes[randomIndex];
-            </script>
-        </section>
-    </div>
-
-    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
-        <h2 class="text-center">Recent Posts</h2>
-        <div class="row">
-            <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4">
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= post.postTitle %></h5>
-                                <p class="card-text"><%= post.postTag %></p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            <% }); %>
+                <button type="button" class="redButton" id="moodButton" onclick="closeForm()">1</button>
+                <button type="button" class="orangeButton" id="moodButton" onclick="closeForm()">2</button>
+                <button type="button" class="yellowButton" id="moodButton" onclick="closeForm()">3</button>
+                <button type="button" class="lightGreenButton" id="moodButton" onclick="closeForm()">4</button>
+                <button type="button" class="greenButton" id="moodButton" onclick="closeForm()">5</button>
+                <button type="button" class="btn cancel" onclick="closeForm()">I'll say later</button>
+                <button type="button" class="btn cancel" onclick="openDetails()">Color details</button>
+            </form>
         </div>
-    </section>
-    
-    <script>
-        function openForm() {
-            document.getElementById("myForm").style.display = "block";
-        }
+        <div id="details" class="colorDetails">
+            <p>1 = Terrible day.</p>
+            <p>2 = Bad day.</p>
+            <p>3 = Neutral day.</p>
+            <p>4 = Good day.</p>
+            <p>5 = Amazing day.</p>
+        </div>
 
-        function closeForm() {
-            document.getElementById("myForm").style.display = "none";
-        }
-        var slider = document.getElementById("myRange");
-        var output = document.getElementById("demo");
-        output.innerHTML = slider.value; // Display the default slider value
+        <!-- Centering the section with class "daily-quote" -->
+        <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+            <section class="daily-quote">
+                <h2>Daily Quote</h2>
+                <p id="quote"></p>
+                <script>
+                    const quotes = [
+                        "Quote 1",
+                        "Quote 2",
+                        "Quote 3",
+                        "Quote 4",
+                        "Quote 5"
+                    ];
+                    const randomIndex = Math.floor(Math.random() * quotes.length);
+                    document.getElementById("quote").textContent = quotes[randomIndex];
+                </script>
+            </section>
+        </div>
 
-        // Update the current slider value (each time you drag the slider handle)
-        slider.oninput = function () {
-            output.innerHTML = this.value;
-        }
-    </script>
-</body>
+        <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
+            <h2 class="text-center">Recent Posts</h2>
+            <div class="row">
+                <% storyPosts.forEach(function(post) { %>
+                    <div class="col-md-4 mb-4">
+                        <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>"
+                            class="card-link"> <!-- Add anchor tag wrapping the card -->
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <%= post.postTitle %>
+                                    </h5>
+                                    <p class="card-text">
+                                        <%= post.postTag %>
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <% }); %>
+            </div>
+        </section>
 
-<%- include('templates/footer.ejs') %>
+        <script>
+            function openForm() {
+                document.getElementById("myForm").style.display = "block";
+            }
+
+            function openDetails() {
+                document.getElementById("details").style.display = "block";
+            }
+
+            function closeForm() {
+                document.getElementById("myForm").style.display = "none";
+                document.getElementById("details").style.display = "none";
+            }
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+            output.innerHTML = slider.value; // Display the default slider value
+
+            // Update the current slider value (each time you drag the slider handle)
+            slider.oninput = function () {
+                output.innerHTML = this.value;
+            }
+        </script>
+    </body>
+
+    <%- include('templates/footer.ejs') %>
