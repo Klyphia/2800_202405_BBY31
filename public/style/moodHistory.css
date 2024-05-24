@@ -1,60 +1,48 @@
 #calendar-container {
-    padding-top: 10rem;
+    margin-top: 50%;
 }
 
-.calendar {
+.custom-calendar {
     width: 100%;
-    max-width: 900px;
+    max-width: 500px;
     margin: 0 auto;
-    border: 1px solid #ddd;
-    overflow-x: hidden;
 }
 
-.header {
-    background-color: #a3f7b5;
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    font-size: 0.9rem;
-}
-
-.calendar-days {
+.custom-row {
     display: flex;
+    justify-content: space-between;
     flex-wrap: wrap;
 }
 
-.calendar-days .day {
-    width: 14.28%; /* 100% / 7 days */
+.custom-col {
+    flex: 1 0 calc(100% / 7);
     border: 1px solid #ddd;
-    box-sizing: border-box;
-    padding: 5px;
+    padding: 10px;
     text-align: center;
-    font-size: 0.8rem;
+    min-height: 50px;
+    box-sizing: border-box;
 }
 
-.calendar-days .day .mood {
-    margin-top: 10px;
-    display: block;
+.custom-header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+    width: calc(100% / 7);
+    box-sizing: border-box;
 }
 
+.custom-empty {
+    background-color: transparent;
+    border: none;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .header {
-        font-size: 0.8rem;
+    .custom-calendar {
+        width: 100%;
+        max-width: 100%;
     }
 
-    .calendar-days .day {
-        font-size: 0.7rem;
-        padding: 3px;
-    }
-}
-
-@media (max-width: 576px) {
-    .header {
-        font-size: 0.7rem;
-    }
-
-    .calendar-days .day {
-        font-size: 0.6rem;
-        padding: 2px;
+    .custom-col {
+        padding: 5px;
     }
 }

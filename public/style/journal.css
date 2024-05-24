@@ -1,32 +1,44 @@
-.journal-card {
+#calendar-container {
+    margin-top: 20px;
+}
+
+.calendar {
     width: 100%;
-    max-width: 500px; /* Set a max width for larger screens */
-    height: auto;    
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-.journal-container {
-    margin-top: 20%; /* Adjust margin-top to fit better on smaller screens */
+.row {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow: auto;
+    justify-content: space-between;
 }
 
-.col-sm-6 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px; /* Add some space between rows on mobile */
+.col {
+    flex: 1;
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    min-height: 50px;
 }
 
+.header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
 
+.empty {
+    background-color: transparent;
+    border: none;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .journal-card {
-        width: 70%; /* Make sure the cards take full width on smaller screens */
+    .calendar {
+        width: 100%;
+        max-width: 100%;
     }
 
-    .journal-container {
-        margin-top: 15%; /* Reduce the top margin for smaller screens */
-        overflow: auto;
+    .col {
+        padding: 5px;
     }
 }
