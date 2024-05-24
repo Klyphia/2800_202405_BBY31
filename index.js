@@ -695,6 +695,10 @@ app.get("/viewEntries", sessionValidation, async (req, res) => {
   res.render("viewEntries");
 });
 
+app.get("/moodHistory", sessionValidation, async (req, res) => {
+  res.render("moodHistory");
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
