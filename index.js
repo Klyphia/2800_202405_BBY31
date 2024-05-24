@@ -33,6 +33,8 @@ var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
+const commentsCollection = database.db(mongodb_database).collection("comments");
+
 const randomCollection = database.db(mongodb_database).collection("random_gen_collection");
 
 const moodHistoryCollection = database.db(mongodb_database).collection("mood_history");
@@ -86,10 +88,10 @@ app.set("view engine", "ejs");
 // inserting random data into random
 // const randomData = {
 //   avatar_array: ['examples/avatar1.png'], //tbd - root directory has to specified
-//   dailyQuotes: "",  //tbd
+//   dailyQuotes: "Bye bye",  //tbd
 //   randomUsernames: {
-//     animal: [""], //tbd
-//     color: [""] //tbd
+//     animal: ["Cat"], //tbd
+//     color: ["Nyan"] //tbd
 //   }
 // };
 
@@ -225,7 +227,7 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const commentVisibility = req.body.commentVisibility === 'true'
     const username = req.session.username;
 
     // Create a post object
@@ -270,54 +272,90 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
 // Route to display existing story posts
 app.get("/viewposts", sessionValidation, async (req, res) => {
-  const {title, randomUsername, randomUserAvatar, tag, image, link, content, comments, visibility} = req.query;
-  const parsedComments = JSON.parse(decodeURIComponent(comments));
-  res.render('viewpost', {
-        postTitle: decodeURIComponent(title),
-        randomUsername: decodeURIComponent(randomUsername),
-        randomAvatar: decodeURIComponent(randomUserAvatar),
-        postTag: decodeURIComponent(tag),
-        postUploadImage: decodeURIComponent(image),
-        postLink: decodeURIComponent(link),
-        postContent: decodeURIComponent(content),
-        comments: parsedComments,
-        commentVisibility: decodeURIComponent(visibility)
-  });
-});
-
-
-
-// Route to handle comment submission
-app.post("/post/comment", sessionValidation, async (req, res) => {
-  const { postId, comment } = req.body;
-  const username = req.session.randomUsername;
+  const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility } = req.query;
+  const { postId } = req.body;
+  console.log('postId: ', postId);
+  const commenterUsername = req.session.username;
 
   try {
     // Find the post by postId
-    const post = await userCollection.findOne({ "userPosts.postId": postId });
+    const post = await userCollection.findOne({ "userPosts.postID": postId });
     if (!post) {
-      res.status(404).json({ message: "Post not found" });
+      res.status(404);
+      console.log(res.json({ message: "Post not found" }));
       return;
+    } else {
+      //console.log(post);
     }
 
-    // Add the comment to the post's comments array
-    post.userPosts.forEach(async (userPost) => {
-      if (userPost.postId === postId) {
-        // userPosts comments array
-        userPost.comments.push({
-          commenter: username,
-          comment: comment,
-          createdAt: new Date()
-        });
-      }
-    });
-
-    // Update the post in the database
-    await userCollection.updateOne({ "userPosts.postId": postId }, { $set: post });
-
-    res.status(200).json({ message: "Comment added successfully" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+
+  const post = await userCollection.findOne({ "userPosts.postId": postId });
+
+  const tempPostId = post.postId;
+
+  console.log(tempPostId);
+
+  // Find comments by postID
+  const postComments = await commentsCollection.find({ postID: tempPostId }).toArray();
+
+  res.render('viewpost', {
+    postID: postId, // Change postId to postID
+    postTitle: decodeURIComponent(title),
+    randomUsername: decodeURIComponent(randomUsername),
+    randomAvatar: decodeURIComponent(randomUserAvatar),
+    postTag: decodeURIComponent(tag),
+    postUploadImage: decodeURIComponent(image),
+    postLink: decodeURIComponent(link),
+    postContent: decodeURIComponent(content),
+    comments: postComments,
+    commentVisibility: decodeURIComponent(visibility),
+    commenterUsername: commenterUsername
+});
+  console.log(postComments);
+});
+
+app.post("/post/comment", sessionValidation, async (req, res) => {
+  const { postId, comment } = req.body;
+  const username = req.session.username;
+
+  // Basic validation
+  if (!postId || !comment || !username) {
+    console.log(postId);
+    console.log(comment);
+    console.log(username);
+    return res.status(400).json({ message: "postID, comment, and username are required" });
+  }
+
+  try {
+    // Check if the user exists
+    const user = await userCollection.findOne({ username });
+    if (!user) {
+      res.status(404);
+      return res.render("error", { message: "User not found" });
+    }
+
+    // Insert the comment into the commentsCollection
+    const commenterUsername = user.username;
+    const commentsData = {
+      postId: postId,
+      commenterUsername: commenterUsername,
+      comment: comment,
+      createdAt: new Date()
+    };
+
+    console.log(commentsData);
+
+    // insert commentsData in commentsCollection 
+    const insertionResult = await commentsCollection.insertOne(commentsData);
+    console.log(`Successfully inserted document: ${insertionResult.insertedId}`);
+    res.status(200).json({ message: "Comment added successfully" });
+
+  } catch (error) {
+    console.error(`Failed to insert document: ${error}`);
     res.status(500).json({ message: "Internal server error" });
   }
 });

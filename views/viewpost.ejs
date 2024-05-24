@@ -16,19 +16,30 @@
             <div class="col-md-12 mb-5">
                 <div class="card">
                     <div class="card-body">
-                        <h1 class="card-title"><%= postTitle %></h1>
-                        <p class="card-text"><%= postTag %></p>
-                        <% if (postUploadImage) { %>
-                            <img src="<%= postUploadImage %>" alt="No image" class="img-fluid mb-3">
-                        <% } %>
-                        <% if (postLink) { %>
-                            <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
-                        <% } %>
-                        <p class="card-text"><%= postContent %></p>
-                    </div>
-                    <div>
-                        <h3>Comments:</h3>
-                        
+                        <form action="/post/comment" method="POST">
+                            <h1 class="card-title"><%= postTitle %></h1>
+                            <p class="card-text"><%= postTag %></p>
+                            <% if (postUploadImage) { %>
+                                <img src="<%= postUploadImage %>" alt="No image" class="img-fluid mb-3">
+                            <% } %>
+                            <% if (postLink) { %>
+                                <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
+                            <% } %>
+                            <input type="text" name="postID" value="<%= postID %>" readonly>
+                            <p class="card-text"><%= postContent %></p>
+                            <div>
+                                <h5>Leave a comment:</h5>
+                                <!-- Comment Submission Form -->
+                                <div class="form-group">
+                                    <label for="commenter">Name: <%= commenterUsername %></label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="comment">Comment:</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit Comment</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -36,6 +47,7 @@
         
         <!-- Comments Section -->
         <% if (commentVisibility === 'true') { %>
+            <h4>Comments:</h4>
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
@@ -43,7 +55,7 @@
                             <h2 class="card-title">Comments</h2>
                             <% comments.forEach(comment => { %>
                                 <div class="comment mb-3">
-                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comments %></p>
+                                    <p><strong><%= comment.commenterUsername %>:</strong> <%= comment.comment %></p>
                                     <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
                                 </div>
                             <% }); %>
