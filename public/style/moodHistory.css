@@ -7,10 +7,11 @@
     max-width: 900px;
     margin: 0 auto;
     border: 1px solid #ddd;
+    overflow-x: hidden;
 }
 
 .header {
-    background-color: #f5f5f5;
+    background-color: #a3f7b5;
     border-bottom: 1px solid #ddd;
     padding: 10px;
     text-align: center;

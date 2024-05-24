@@ -1,14 +1,32 @@
 .journal-card {
-    width: 50%;
+    width: 100%;
+    max-width: 500px; /* Set a max width for larger screens */
     height: auto;    
 }
 
 .journal-container {
-    margin-top: 10%;
+    margin-top: 20%; /* Adjust margin-top to fit better on smaller screens */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: auto;
 }
 
 .col-sm-6 {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 20px; /* Add some space between rows on mobile */
+}
+
+
+@media (max-width: 768px) {
+    .journal-card {
+        width: 70%; /* Make sure the cards take full width on smaller screens */
+    }
+
+    .journal-container {
+        margin-top: 15%; /* Reduce the top margin for smaller screens */
+        overflow: auto;
+    }
 }
