@@ -633,6 +633,18 @@ app.get("/savedDrafts", sessionValidation, async (req, res) => {
   res.render("userDraftsPage", { savedDrafts });
 });
 
+app.get("/savedPosts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { savedPosts } = result;
+  res.render("userSavedPostsPage", { savedPosts });
+});
+
 app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
   try {
     const userId = req.session.userid;

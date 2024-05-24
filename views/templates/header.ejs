@@ -7,18 +7,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compassionet</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/style/header.css">
     <link rel="stylesheet" href="/style/footer.css">
     <link rel="stylesheet" href="/style/createPost.css">
     <link rel="stylesheet" href="/style/journal.css">
     <link rel="stylesheet" href="/style/viewEntries.css">
+    <link rel="stylesheet" href="/style/viewPost.css">
+    <link rel="stylesheet" href="/style/profile.css">
 </head>
 
 <body>
     <header class="navbar navbar-expand-lg navbar-light fixed-top header-navbar" style="background-color: #a3f7b5;">
         <div class="container-fluid justify-content-center">
             <a class="navbar-brand" href="/">
-                <img src="/images/CompassionetLogo.png" alt="Compassionet"/>
+                <img id="compassionetLogo" src="/images/CompassionetLogo.png" alt="Compassionet" />
             </a>
         </div>
     </header>
+
+    <script>
+        let startTime;
+        let held = false;
+    
+        document.getElementById('compassionetLogo').addEventListener('mousedown', function() {
+            startTime = new Date().getTime();
+            held = true;
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseup', function() {
+            if (held) {
+                let endTime = new Date().getTime();
+                let timeHeld = endTime - startTime;
+    
+                if (timeHeld >= 5000) {
+                    console.log('Image held for 5 seconds or more!');
+                }
+    
+                held = false;
+            }
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseout', function() {
+            held = false;
+        });
+    </script>

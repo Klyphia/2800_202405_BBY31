@@ -19,3 +19,7 @@
 .daily-quote {
     padding-top: 150px; /* Adjust according to the height of the fixed-top header */
 }
+
+* {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  }

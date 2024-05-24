@@ -1,7 +1,4 @@
 <%- include('templates/header.ejs') %>
-<head>
-    <link rel="stylesheet" href="/style/home.css">
-</head>
 <body>
     <!-- A button to open the popup form -->
     <button class="open-button" onclick="openForm()">Open Form</button>
@@ -23,25 +20,13 @@
 
     <!-- Centering the section with class "daily-quote" -->
     <!-- style height is for changing the size of the webpage -->    
-    <div class="container d-flex justify-content-center align-items-center" style="height: 35vh;">
-        <section class="daily-quote">
-            <h2>Daily Quote</h2>
-            <p id="quote"></p>
-            <script>
-                const quotes = [
-                    "Quote 1",
-                    "Quote 2",
-                    "Quote 3",
-                    "Quote 4",
-                    "Quote 5"
-                ];
-                const randomIndex = Math.floor(Math.random() * quotes.length);
-                document.getElementById("quote").textContent = quotes[randomIndex];
-            </script>
-        </section>
+    <div class="container d-flex justify-content-center align-items-center" style="height: 15vh;">
+        
     </div>
 
-    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
+    <section class="grid-container pb-5" style="position: relative;"> <!-- Add pb-5 class for padding at the bottom -->
+        <p id="quote" style="text-align: center;"></p>
+        <p id="author" style="padding: auto; text-align: center;"></p>
         <h2 class="text-center">Recent Posts</h2>
         <!-- Filter Dropdown -->
         <div class="text-center mb-4">
@@ -107,6 +92,27 @@
             });
         });
     </script>
-</body>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
 
+var category = 'inspirational'
+$.ajax({
+    method: 'GET',
+    url: 'https://api.api-ninjas.com/v1/quotes?category=' + category,
+    headers: { 'X-Api-Key': '8blp8mtoceydSVp2wqeILg==hmdrcbahXESxx9aD'},
+    contentType: 'application/json',
+    success: function(result) {
+        console.log(result);
+        // console.log(result[0].quote);
+        document.getElementById('quote').innerHTML = result[0].quote;
+        // console.log(result[0].author);
+        document.getElementById('author').innerHTML = result[0].author;
+    },
+    error: function ajaxError(jqXHR) {
+        console.error('Error: ', jqXHR.responseText);
+    }
+    
+});
+
+</script>
 <%- include('templates/footer.ejs') %>
