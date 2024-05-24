@@ -1,0 +1,42 @@
+<%- include("templates/header.ejs") %>
+<div class="container my-4" id="calendar-container">
+    <h2>Monthly Mood Calendar</h2>
+    <div id="calendar" class="calendar">
+        <div class="row">
+            <div class="col header">Sun</div>
+            <div class="col header">Mon</div>
+            <div class="col header">Tue</div>
+            <div class="col header">Wed</div>
+            <div class="col header">Thu</div>
+            <div class="col header">Fri</div>
+            <div class="col header">Sat</div>
+        </div>
+        <div id="calendar-days" class="calendar-days"></div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarDaysContainer = document.getElementById('calendar-days');
+
+        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+        const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.classList.add('day');
+            calendarDaysContainer.appendChild(emptyDay);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.classList.add('day');
+            dayElement.innerHTML = `
+                <span>${i}</span>
+                <span class="mood">No mood recorded</span>
+            `;
+            calendarDaysContainer.appendChild(dayElement);
+        }
+    });
+</script>
+
+<%- include("templates/footer.ejs") %>

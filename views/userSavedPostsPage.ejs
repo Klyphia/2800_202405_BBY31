@@ -10,7 +10,7 @@
 <body>
     <section class="grid-container pb-5 mt-200"> <!-- Add pb-5 class for padding at the bottom and mt-200 for margin at the top -->
         <div class="row">
-            <% savedDrafts.forEach(function(post) { %>
+            <% savedPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4">
                     <a href="/createPost?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postID=<%= encodeURIComponent(post.postId) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">

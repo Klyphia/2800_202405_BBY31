@@ -1,0 +1,57 @@
+<%- include('templates/header.ejs') %>
+    <div class="view-entries-container">
+        <div class="viewEntriesRow" id="entriesContainer">
+            <!-- Journal entries will be appended here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/getJournalEntries')
+                .then(response => response.json())
+                .then(entries => {
+                    console.log(entries);
+                    const entriesContainer = document.getElementById('entriesContainer');
+                    if (entries.length === 0) {
+                        const noEntriesMessage = document.createElement('p');
+                        noEntriesMessage.textContent = 'No journal entries found.';
+                        entriesContainer.appendChild(noEntriesMessage);
+                    } else {
+                        entries.forEach(entry => {
+                            const cardCol = document.createElement('div');
+                            cardCol.className = 'col-lg-10 mx-auto p-4';
+
+                            const card = document.createElement('div');
+                            card.className = 'card journal-card';
+                            card.style.height = 'auto';
+
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body';
+
+                            const cardTitle = document.createElement('h5');
+                            cardTitle.className = 'card-title';
+                            const entryDate = new Date(entry.timestamp).toLocaleDateString();
+                            cardTitle.textContent = entryDate;
+
+                            const cardText = document.createElement('p');
+                            cardText.className = 'card-text';
+                            cardText.textContent = entry.entry;
+
+                            cardBody.appendChild(cardTitle);
+                            cardBody.appendChild(cardText);
+                            card.appendChild(cardBody);
+                            cardCol.appendChild(card);
+                            entriesContainer.appendChild(cardCol);
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching journal entries:', err);
+                    const entriesContainer = document.getElementById('entriesContainer');
+                    const errorMessage = document.createElement('p');
+                    errorMessage.textContent = 'An error occurred while fetching journal entries.';
+                    entriesContainer.appendChild(errorMessage);
+                });
+        });
+    </script>
+    <%- include('templates/footer.ejs') %>

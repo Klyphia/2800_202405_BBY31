@@ -1,0 +1,20 @@
+.float-right {
+    float: right;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-toggle-split {
+    margin-left: 10px; /* add some space between the title and the dropdown toggle */
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: auto;
+    left: -114px; /* position the dropdown menu to the left */
+    transform: translateX(0); /* remove the translation */
+  }
+

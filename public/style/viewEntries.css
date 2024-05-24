@@ -1,0 +1,12 @@
+.view-entries-container {
+    margin-top: 20vh;
+}
+
+.col-lg-10 {
+    display: flex;
+    justify-content: center;
+}
+
+.journal-card {
+    background-color: #a3f7b5;
+}
