@@ -1,29 +1,39 @@
 <%- include('templates/header.ejs') %>
-<body>
-    <!-- A button to open the popup form -->
-    <button class="open-button" onclick="openForm()">Open Form</button>
 
-    <!-- The form -->
-    <div class="form-popup" id="myForm" style="display:none;"> <!-- Ensure the form is hidden by default -->
-        <form class="form-container">
-            <h1>How are you feeling today?</h1>
+    <head>
+        <link rel="stylesheet" href="/style/home.css">
+    </head>
 
-            <div class="slidecontainer">
-                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-                <p>Value: <span id="demo"></span></p> <!-- Display the slider value -->
-            </div>
+    <body>
+        <!-- A button to open the popup form -->
+        <button class="open-button" onclick="openForm()">Open Form</button>
 
-            <button type="submit" class="btn">Submit</button>
-            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-        </form>
+        <!-- The form -->
+        <div class="form-popup" id="myForm">
+            <form class="form-container">
+                <div class="moodTitle">How are you feeling today?</div>
+
+                <button type="button" class="redButton" id="moodButton" onclick="closeForm()">1</button>
+                <button type="button" class="orangeButton" id="moodButton" onclick="closeForm()">2</button>
+                <button type="button" class="yellowButton" id="moodButton" onclick="closeForm()">3</button>
+                <button type="button" class="lightGreenButton" id="moodButton" onclick="closeForm()">4</button>
+                <button type="button" class="greenButton" id="moodButton" onclick="closeForm()">5</button>
+                <button type="button" class="btn cancel" onclick="closeForm()">I'll say later</button>
+                <button type="button" class="btn cancel" onclick="openDetails()">Color details</button>
+            </form>
+        </div>
+        <div id="details" class="colorDetails">
+            <p>1 = Terrible day.</p>
+            <p>2 = Bad day.</p>
+            <p>3 = Neutral day.</p>
+            <p>4 = Good day.</p>
+            <p>5 = Amazing day.</p>
     </div>
-
     <!-- Centering the section with class "daily-quote" -->
     <!-- style height is for changing the size of the webpage -->    
     <div class="container d-flex justify-content-center align-items-center" style="height: 15vh;">
         
     </div>
-
     <section class="grid-container pb-5" style="position: relative;"> <!-- Add pb-5 class for padding at the bottom -->
         <p id="quote" style="text-align: center;"></p>
         <p id="author" style="padding: auto; text-align: center;"></p>
@@ -57,12 +67,29 @@
                 </div>
             <% }); %>
         </div>
-    </section>
-    
-    <script>
-        function openForm() {
-            document.getElementById("myForm").style.display = "block";
-        }
+
+        <script>
+            function openForm() {
+                document.getElementById("myForm").style.display = "block";
+            }
+
+            function openDetails() {
+                document.getElementById("details").style.display = "block";
+            }
+
+            function closeForm() {
+                document.getElementById("myForm").style.display = "none";
+                document.getElementById("details").style.display = "none";
+            }
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+            output.innerHTML = slider.value; // Display the default slider value
+
+            // Update the current slider value (each time you drag the slider handle)
+            slider.oninput = function () {
+                output.innerHTML = this.value;
+            }
+       
 
         function closeForm() {
             document.getElementById("myForm").style.display = "none";
@@ -115,32 +142,4 @@ $.ajax({
 });
 
 </script>
-
-<script>
-        let startTime;
-        let held = false;
-    
-        document.getElementById('compassionetLogo').addEventListener('mousedown', function() {
-            startTime = new Date().getTime();
-            held = true;
-        });
-    
-        document.getElementById('compassionetLogo').addEventListener('mouseup', function() {
-            if (held) {
-                let endTime = new Date().getTime();
-                let timeHeld = endTime - startTime;
-    
-                if (timeHeld >= 5000) {
-                    console.log('Image held for 5 seconds or more!');
-                }
-    
-                held = false;
-            }
-        });
-    
-        document.getElementById('compassionetLogo').addEventListener('mouseout', function() {
-            held = false;
-        });
-        
-    </script>
 <%- include('templates/footer.ejs') %>
