@@ -111,6 +111,15 @@ app.get("/", sessionValidation, async (req, res) => {
   res.render("home", { storyPosts: storyPosts });
 });
 
+app.get("/easterEgg", sessionValidation, async (req, res) => {
+  const userPostsArray = await userCollection
+    .find({}, { projection: { userPosts: 1 } })
+    .toArray();
+  const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
+  storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
+  res.render("easterEgg", { storyPosts: storyPosts });
+});
+
 // Route for creating user post
 app.get("/createPost", sessionValidation, async (req, res) => {
   const username = req.session.username;
@@ -217,7 +226,8 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
       { $push: { userPosts: post } }
     );
 
-    res.redirect("/postConfirmation"); // Redirect the confirmation page
+    res.redirect("/home"); // Redirect the confirmation page
+    window.alert("post succecssfully created")
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
