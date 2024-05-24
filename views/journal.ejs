@@ -20,7 +20,7 @@
     </div>
     <div class="row">
         <div class="col-sm-6 p-4">
-            <div class="card bg-dark text-white journal-card" style="height: auto">
+            <div class="card bg-dark text-white journal-card" style="height: auto" id="moodHistory">
                 <img src="/images/mood_history.jpg" class="card-img" alt="...">
                 <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
                     <h5 class="card-title text-center">Mood History</h5>
@@ -67,6 +67,10 @@
 
             viewEntriesCard.addEventListener('click', function () {
                 window.location.href = '/viewEntries';
+            });
+
+            moodHistory.addEventListener('click', function () {
+                window.location.href = '/moodHistory';
             });
 
             saveButton.addEventListener('click', function () {
