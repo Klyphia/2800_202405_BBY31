@@ -1,0 +1,97 @@
+<%- include('templates/header.ejs') %>
+
+<body class="d-flex justify-content-center align-items-center vh-100">
+    <div class="container mt-custom">
+        <div class="row">
+            <!-- Post Details -->
+            <div class="col-md-12 mb-5">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="col-md-12 mb-5">
+                            <div class="col-md-12 mb-5">
+                                <h1 class="card-title"><%= postTitle %></h1>
+                                <div class="float-right">
+                                  <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle-split" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                      <button class="dropdown-item" type="button">
+                                        <i class="bi bi-bookmark mr-2"></i>Save post
+                                      </button>
+                                      <button class="dropdown-item" type="button">
+                                        <i class="bi bi-exclamation-triangle mr-2"></i>Report post
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                        <p class="card-text"><%= postTag %></p>
+                        <% if (!postUploadImage) { %>
+                            <img src="<%= postUploadImage %>" alt="No image" class="img-fluid mb-3">
+                        <% } %>
+                        <% if (postLink) { %>
+                            <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
+                        <% } %>
+                        <p class="card-text"><%= postContent %></p>
+                    </div>
+                    <div>
+                        <h3>Comments:</h3>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <% if (commentVisibility === 'true') { %>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title">Comments</h2>
+                            <% comments.forEach(comment => { %>
+                                <div class="comment mb-3">
+                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comments %></p>
+                                    <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Get the dropdown menu and its toggle button
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        const dropdownToggle = document.querySelector('#dropdownMenuButton');
+      
+        // Add event listener to the toggle button
+        dropdownToggle.addEventListener('click', function() {
+          // Toggle the dropdown menu
+          dropdownMenu.classList.toggle('show');
+        });
+      
+        // Add event listeners to the dropdown items
+        const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach((item) => {
+          item.addEventListener('click', function() {
+            // Handle the click event for each item
+            if (item.textContent.includes('Save post')) {
+              // Save post logic here
+              console.log('Save post clicked!');
+            } else if (item.textContent.includes('Report post')) {
+              // Report post logic here
+              console.log('Report post clicked!');
+            }
+          });
+        });
+      </script>
+</body>
+<%- include('templates/footer.ejs') %>

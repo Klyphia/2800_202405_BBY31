@@ -1,4 +1,4 @@
-<%- include('templates/header.ejs') %>
+<%- include('templates/headerEasterEgg.ejs') %>
 <body>
     <!-- A button to open the popup form -->
     <button class="open-button" onclick="openForm()">Open Form</button>
@@ -115,4 +115,33 @@ $.ajax({
 });
 
 </script>
-<%- include('templates/footer.ejs') %>
+
+<script>
+        let startTime;
+        let held = false;
+    
+        document.getElementById('compassionetLogo').addEventListener('mousedown', function() {
+            startTime = new Date().getTime();
+            held = true;
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseup', function() {
+            if (held) {
+                let endTime = new Date().getTime();
+                let timeHeld = endTime - startTime;
+    
+                if (timeHeld >= 5000) {
+                    console.log('Image held for 5 seconds or more!');
+                }
+    
+                held = false;
+            }
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseout', function() {
+            held = false;
+        });
+        
+    </script>
+
+<%- include('templates/footerEasterEgg.ejs') %>

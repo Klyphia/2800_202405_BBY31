@@ -1,0 +1,25 @@
+.container {
+    min-height: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.header-navbar {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand img {
+    height: 10vh;
+    border: none;
+    margin: 0;
+}
+
+.daily-quote {
+    padding-top: 150px; /* Adjust according to the height of the fixed-top header */
+}
+
+* {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  }

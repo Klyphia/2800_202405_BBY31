@@ -1,0 +1,14 @@
+.journal-card {
+    width: 50%;
+    height: auto;    
+}
+
+.journal-container {
+    margin-top: 10%;
+}
+
+.col-sm-6 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

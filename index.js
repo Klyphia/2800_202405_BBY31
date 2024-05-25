@@ -4,8 +4,14 @@ const express = require("express");
 require("dotenv").config();
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const { ObjectId } = require("mongodb");
+const multer = require("multer");
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
+const nodemailer = require("nodemailer");
+const bodyParser = require("body-parser");
+const path = require("path");
+const crypto = require("crypto");
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
@@ -27,6 +33,10 @@ var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
+const randomCollection = database.db(mongodb_database).collection("random_gen_collection");
+
+const moodHistory = database.db(mongodb_database).collection("mood_history");
+
 var mongoStore = MongoStore.create({
   mongoUrl,
   crypto: {
@@ -43,7 +53,10 @@ app.use(
   })
 );
 
-app.use(express.static(__dirname+'/public'));
+app.use(express.static(__dirname + "/public"));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
 function isValidSession(req) {
   if (req.session.loggedIn) {
@@ -54,8 +67,8 @@ function isValidSession(req) {
 
 function sessionValidation(req, res, next) {
   if (!isValidSession(req)) {
-    console.log('Going to landing page.')
-    res.render('landingPage');
+    console.log("Going to login.");
+    res.render("login");
   } else {
     next();
   }
@@ -70,44 +83,196 @@ app.use(express.urlencoded({ extended: false }));
 app.set("views", "./views"); // Specify the views directory
 app.set("view engine", "ejs");
 
+// inserting random data into random
+// const randomData = {
+//   avatar_array: ['examples/avatar1.png'], //tbd - root directory has to specified
+//   dailyQuotes: "",  //tbd
+//   randomUsernames: {
+//     animal: [""], //tbd
+//     color: [""] //tbd
+//   }
+// };
+
+// randomCollection.insertOne(randomData)
+// .then(result => {
+//   console.log(`Successfully inserted document: ${result.insertedId}`);
+// })
+// .catch(error => {
+//   console.log(`Failed to insert document: ${error}`);
+// });
+
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
-  res.render("home");
+  const userPostsArray = await userCollection
+    .find({}, { projection: { userPosts: 1 } })
+    .toArray();
+  const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
+  storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
+  res.render("home", { storyPosts: storyPosts });
 });
-app.get("/passwordReset", (req, res) => {
-  res.render("passwordReset");
+
+app.get("/easterEgg", sessionValidation, async (req, res) => {
+  const userPostsArray = await userCollection
+    .find({}, { projection: { userPosts: 1 } })
+    .toArray();
+  const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
+  storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
+  res.render("easterEgg", { storyPosts: storyPosts });
 });
 
 // Route for creating user post
 app.get("/createPost", sessionValidation, async (req, res) => {
-  res.render("createPost");
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+
+  // Retrieve query parameters
+  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postID } = req.query;
+
+  // Decode URI components and parse comments if available
+  const decodedTitle = title ? decodeURIComponent(title) : '';
+  const decodedRandomUsername = randomUsername ? decodeURIComponent(randomUsername) : '';
+  const decodedRandomAvatar = randomAvatar ? decodeURIComponent(randomAvatar) : '';
+  const decodedTag = tag ? decodeURIComponent(tag) : '';
+  const decodedImage = image ? decodeURIComponent(image) : '';
+  const decodedLink = link ? decodeURIComponent(link) : '';
+  const decodedContent = content ? decodeURIComponent(content) : '';
+  const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
+  const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
+  const decodedPostID = postID ? decodeURIComponent(postID) : '';
+
+  // define function to get random elements from an array
+  function getRandomElement(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  async function getRandomData(username, avatar) {
+    try {
+      const randomData = await randomCollection.findOne({});
+      if (!randomData) {
+        throw new Error('No random data found');
+      }
+
+      const randomGenUsername = username || getRandomElement(randomData.name.animal) + getRandomElement(randomData.name.color);
+      const randomAvatar = avatar || getRandomElement(randomData.avatar_array);
+
+      return { randomGenUsername, randomAvatar };
+    } catch (error) {
+      console.error(`Failed to retrieve random data ${error}`);
+      return { randomGenUsername: '', randomAvatar:'' };
+    }
+  }
+
+  // Use the function to get random data
+  getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
+  // Now you have randomUsername and randomAvatar, you can proceed with your logic
+    res.render('createPost', {
+      postTitle: decodedTitle,
+      randomGenUsername: randomGenUsername,
+      randomAvatar: randomAvatar,
+      postTag: decodedTag,
+      postUploadImage: decodedImage,
+      postLink: decodedLink,
+      postContent: decodedContent,
+      comments: parsedComments,
+      commentVisibility: decodedVisibility,
+      postID: decodedPostID
+    });
+  });
 });
 
-app.post("/submitPost", sessionValidation, async (req, res) => {
+const upload = multer();
+
+app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
   try {
     // Get form data from request body
-    const { postTitle, postTag, postUploadImage, postLink, commentVisibility, postContent } = req.body;
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true';
     const username = req.session.username;
+    const currentDate = new Date();
+
+    if (!postTitle || !postContent || !postTag) {
+      // Redirect back to createPost page with error message as query parameter
+      return res.redirect("/createPost?error=Missing%20Title/Tag/Content");
+    }
+
+    if (postTitle === null || postContent === null || postTag === null) {
+      return res.render("createPost", { invalidPosting: invalidPosting });
+    }
 
     // Create a post object
     const post = {
       postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
       postTitle: postTitle,
+      randomGenUsername: randomGenUsername,
+      randomAvatar: randomAvatar,
       postTag: postTag,
       postUploadImage: postUploadImage,
       postLink: postLink,
       commentVisibility: commentVisibility,
       postContent: postContent,
-      comments: [] // Initialize an empty comments array for the post
+      currentDate: currentDate,
+      comments: [], // Initialize an empty comments array for the post
     };
 
+    console.log(post);
     // Update user document in the database to add the new post to userPosts array
     await userCollection.updateOne(
       { username: username },
       { $push: { userPosts: post } }
     );
 
-    res.redirect("/postConfirmation"); // Redirect the confirmation page
+    window.alert("post succecssfully created")
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
+  try {
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true';
+    const username = req.session.username;
+
+    // Create a post object
+    const post = {
+      postId: postID ? new ObjectId(postID) : new ObjectId(), // Use existing postId if provided
+      postTitle,
+      randomGenUsername,
+      randomAvatar,
+      postTag,
+      postUploadImage,
+      postLink,
+      commentVisibility,
+      postContent,
+      comments: [], // Initialize an empty comments array for the post
+    };
+
+    console.log(post);
+
+    if (postID) {
+      // If postId exists, update the existing draft
+      await userCollection.updateOne(
+        { username, "savedDrafts.postId": new ObjectId(postID) },
+        { $set: { "savedDrafts.$": post } }
+      );
+    } else {
+      // If no postId, insert a new draft
+      await userCollection.updateOne(
+        { username },
+        { $push: { savedDrafts: post } }
+      );
+    }
+
+    const user = await userCollection.findOne({ username });
+    console.log(`Number of saved drafts: ${user.savedDrafts.length}`);
+
+    res.redirect("/postConfirmation"); // Redirect to confirmation page
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -115,28 +280,28 @@ app.post("/submitPost", sessionValidation, async (req, res) => {
 });
 
 // Route to display existing story posts
-app.get("/viewposts", async (req, res) => {
-  const loggedIn = req.session.loggedIn;
-  try {
-    // Fetch userPosts array from all documents
-    const userPostsArray = await userCollection.find({}, { projection: { userPosts: 1 } }).toArray();
-
-    // Extract userPosts from each document and flatten into a single array (storyPosts)
-    const storyPosts = userPostsArray.flatMap(user => user.userPosts);
-
-    // render story/posts onto the viewpost page
-    res.render("viewposts", { storyPosts: storyPosts, loggedIn: loggedIn });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+app.get("/viewposts", sessionValidation, async (req, res) => {
+  const {title, randomUsername, randomUserAvatar, tag, image, link, content, comments, visibility} = req.query;
+  const parsedComments = JSON.parse(decodeURIComponent(comments));
+  res.render('viewpost', {
+        postTitle: decodeURIComponent(title),
+        randomUsername: decodeURIComponent(randomUsername),
+        randomAvatar: decodeURIComponent(randomUserAvatar),
+        postTag: decodeURIComponent(tag),
+        postUploadImage: decodeURIComponent(image),
+        postLink: decodeURIComponent(link),
+        postContent: decodeURIComponent(content),
+        comments: parsedComments,
+        commentVisibility: decodeURIComponent(visibility)
+  });
 });
+
+
 
 // Route to handle comment submission
 app.post("/post/comment", sessionValidation, async (req, res) => {
   const { postId, comment } = req.body;
-  const username = req.session.username;
+  const username = req.session.randomUsername;
 
   try {
     // Find the post by postId
@@ -153,13 +318,16 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
         userPost.comments.push({
           commenter: username,
           comment: comment,
-          createdAt: new Date()
+          createdAt: new Date(),
         });
       }
     });
 
     // Update the post in the database
-    await userCollection.updateOne({ "userPosts.postId": postId }, { $set: post });
+    await userCollection.updateOne(
+      { "userPosts.postId": postId },
+      { $set: post }
+    );
 
     res.status(200).json({ message: "Comment added successfully" });
   } catch (error) {
@@ -168,7 +336,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
   }
 });
 
-app.get("/journal", (req, res) => {
+app.get("/journal", sessionValidation, async (req, res) => {
   res.render("journal");
 });
 
@@ -197,13 +365,15 @@ app.post("/submitSignUp", async (req, res) => {
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
     password: Joi.string().max(20).required(),
-    email: Joi.string().email().required() // changed to include email
+    email: Joi.string().email().required(), // changed to include email
   });
 
   const validationResult = schema.validate({ username, password, email });
 
   if (validationResult.error != null) {
-    const errorMessages = validationResult.error.details.map(detail => detail.message);
+    const errorMessages = validationResult.error.details.map(
+      (detail) => detail.message
+    );
     return res.status(400).json({ error: errorMessages });
   }
 
@@ -214,9 +384,11 @@ app.post("/submitSignUp", async (req, res) => {
       username: username,
       password: hashedPassword,
       email: email, // changed to include email
+      resetPasswordToken: "",
+      resetPasswordExpires: "",
       savedDrafts: [],
       savedPosts: [],
-      userPosts: []
+      userPosts: [],
     });
 
     console.log("Inserted user");
@@ -231,9 +403,137 @@ app.post("/submitSignUp", async (req, res) => {
   }
 });
 
-
 app.get("/login", (req, res) => {
   res.render("login");
+});
+
+app.get("/passwordReset", (req, res) => {
+  res.render("passwordResetIntialized");
+});
+
+app.post("/resetPassword", async (req, res) => {
+  const useremail = req.body.email;
+
+  try {
+    // Checking if the email exists in the userCollection
+    const user = await userCollection.findOne({ email: useremail });
+
+    if (!user) {
+      return res.status(404).render("noUserFoundPage");
+    }
+
+    // Generating a unique token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Setting token expiration time (1 hour from now)
+    const tokenExpiry = Date.now() + 3600000; // 1 hour in milliseconds
+
+    // Updating the user document with the reset token and expiry
+    await userCollection.updateOne(
+      { email: useremail },
+      { $set: { resetPasswordToken: token, resetPasswordExpires: tokenExpiry } }
+    );
+
+    // Set up Nodemailer transport
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // true of 465, false for all else
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASS,
+      },
+    });
+
+    // Constructing the reset URL
+    const resetURL = `http://${req.headers.host}/reset/${token}`;
+
+    // Send the email with the reset link
+    const mailOptions = {
+      to: useremail,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+             Please click on the following link, or paste this into your browser to complete the process:\n\n
+             ${resetURL}\n\n
+             If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    const sendMail = async (transporter, mailOptions) => {
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log("Email has been sent!");
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    sendMail(transporter, mailOptions);
+
+    res.status(200);
+    res.render("resetPasswordMessage");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
+});
+
+app.get("/reset/:token", async (req, res) => {
+  try {
+    const user = await userCollection.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }, // Ensure the token has not expired
+    });
+
+    if (!user) {
+      res.status(400);
+      res.render("passwordResetExpired");
+    }
+
+    // Render a form to set the new password
+    res.render("passwordResetForm", { token: req.params.token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
+});
+
+app.post("/resetPassword/:token", async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).send("Passwords do not match.");
+  }
+
+  try {
+    const user = await userCollection.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .send("Password reset token is invalid or has expired.");
+    }
+    console.log("User found:", user.email);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await userCollection.updateOne(
+      { email: user.email },
+      {
+        $set: { password: hashedPassword },
+        $unset: { resetPasswordToken: "", resetPasswordExpires: "" },
+      }
+    );
+
+    res.status(200).render("passwordResetSuccess");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error.");
+  }
 });
 
 app.post("/loggingIn", async (req, res) => {
@@ -241,13 +541,12 @@ app.post("/loggingIn", async (req, res) => {
   var password = req.body.password;
   // var email = req.body.email;
 
-
   const schema = Joi.object({
     username: Joi.string().alphanum().max(20).required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
   });
 
-  const validationResult = schema.validate({ username, password});
+  const validationResult = schema.validate({ username, password });
 
   if (validationResult.error != null) {
     console.log(validationResult.error);
@@ -256,15 +555,18 @@ app.post("/loggingIn", async (req, res) => {
   }
 
   const result = await userCollection
-  .find({ username: username})
-  .project({ 
-      username: 1, 
-      password: 1, 
-      email: 1, 
-      savedDrafts: 1, 
-      savedPosts: 1, 
-      userPosts: 1
-      })
+    .find({ username: username })
+    .project({
+      _id: 1,
+      username: 1,
+      password: 1,
+      email: 1,
+      resetPasswordToken: 1,
+      resetPasswordExpires: 1,
+      savedDrafts: 1,
+      savedPosts: 1,
+      userPosts: 1,
+    })
     .toArray();
 
   if (result.length === 0) {
@@ -284,8 +586,11 @@ app.post("/loggingIn", async (req, res) => {
     console.log("correct password");
     req.session.loggedIn = true;
     console.log("Session: " + req.session.loggedIn);
+    req.session.userid = result[0]._id;
     req.session.username = result[0].username;
     req.session.email = result[0].email;
+    req.session.resetPasswordToken = result[0].resetPasswordToken;
+    req.session.resetPasswordExpires = result[0].resetPasswordExpires;
     req.session.savedDrafts = result[0].savedDrafts;
     req.session.savedPosts = result[0].savedPosts;
     req.session.userPosts = result[0].userPosts;
@@ -300,10 +605,10 @@ app.post("/loggingIn", async (req, res) => {
 });
 
 app.get("/profile", sessionValidation, async (req, res) => {
-
   const username = req.session.username;
   const email = req.session.email;
   console.log(email);
+  console.log(req.session.userid);
 
   const result = await userCollection.findOne({ username });
 
@@ -313,19 +618,106 @@ app.get("/profile", sessionValidation, async (req, res) => {
     return;
   }
 
-  const { 
-    savedDrafts, 
-    savedPosts, 
-    userPosts
-  } = result;
+  const { savedDrafts, savedPosts, userPosts } = result;
 
-  res.render("profile", { 
+  res.render("profile", {
     username,
-    savedDrafts, 
-    savedPosts, 
+    savedDrafts,
+    savedPosts,
     userPosts,
     username: req.session.username,
-    email: req.session.email});
+    email: req.session.email,
+  });
+});
+
+app.get("/savedDrafts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { savedDrafts } = result;
+  res.render("userDraftsPage", { savedDrafts });
+});
+
+app.get("/savedPosts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { savedPosts } = result;
+  res.render("userSavedPostsPage", { savedPosts });
+});
+
+app.get("/userPosts", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const result = await userCollection.findOne({ username });
+  if (!result) {
+    res.status(404);
+    res.render("error", { message: "User not found" });
+    return;
+  }
+  const { userPosts } = result;
+  res.render("userPostsPage", { userPosts });
+});
+
+app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
+  try {
+    const userId = req.session.userid;
+    const { entry } = req.body; // Assuming these are the fields in your journal entry
+    const timestamp = new Date();
+
+    // Check if there's already a document in mood_history with the user ID
+    let userMoodHistory = await moodHistory.findOne({ userId: userId });
+
+    if (userMoodHistory) {
+      // If document exists, update it with the new entry
+      await moodHistory.updateOne(
+        { userId: userId },
+        { $push: { entries: { entry, timestamp } } }
+      );
+    } else {
+      // If no document exists, create a new one
+      await moodHistory.insertOne({
+        userId: userId,
+        entries: [{ entry, timestamp }],
+      });
+    }
+
+    res.status(200).json({ message: "Journal entry saved successfully" });
+  } catch (error) {
+    console.error("Error saving journal entry:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/getJournalEntries', sessionValidation, async (req, res) => {
+  const userId = req.session.userid;
+  console.log(userId);
+  try {
+    const user = await moodHistory.findOne({ userId: userId });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const entries = user.entries || []; // If 'entries' field does not exist, default to an empty array
+    res.json(entries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get("/viewEntries", sessionValidation, async (req, res) => {
+  res.render("viewEntries");
+});
+
+app.get("/moodHistory", sessionValidation, async (req, res) => {
+  res.render("moodHistory");
 });
 
 app.listen(port, () => {
