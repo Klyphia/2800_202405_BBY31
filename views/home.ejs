@@ -46,11 +46,14 @@
         <div class="row" id="postsContainer">
             <% storyPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <input type="hidden" name="username" value="<%= username %>">
+                    <input type="hidden" name="message" value="<%= message %>">
+                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
+                                <input type="hidden" name="username" value="<%= username %>">
                             </div>
                         </div>
                     </a>
