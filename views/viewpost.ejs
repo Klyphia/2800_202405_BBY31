@@ -27,8 +27,10 @@
                                 </div>
                               </div>
                         <p class="card-text"><%= postTag %></p>
-                        <% if (!postUploadImage) { %>
-                            <img src="<%= postUploadImage %>" alt="No image" class="img-fluid mb-3">
+                        <% if (postUploadImage) { %>
+                          <div class="d-flex justify-content-center">
+                              <img src="<%= postUploadImage %>" alt="Image" class="img-fluid mb-3">
+                          </div>
                         <% } %>
                         <% if (postLink) { %>
                             <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
