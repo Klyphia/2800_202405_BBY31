@@ -12,6 +12,15 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const path = require("path");
 const crypto = require("crypto");
+const {v4: uuid} = require('uuid');
+const cloudinary = require("cloudinary");
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_CLOUD_KEY,
+  api_secret: process.env.CLOUDINARY_CLOUD_SECRET
+});
+const storage = multer.memoryStorage()
+const uploadForImage = multer({ storage: storage });
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
@@ -76,6 +85,26 @@ function sessionValidation(req, res, next) {
   }
 }
 
+// middleware for returning to array of all comments made by everyone
+const fetchAndSortUserComments = async (req, res, next) => {
+  try {
+    // Fetch all comments from the commentsCollection
+    const commentsArray = await commentsCollection
+      .find({}, { projection: { _id: 0 } }) // Assuming you want to exclude the MongoDB _id field
+      .toArray();
+
+    // Sort the comments based on the createdAt field
+    commentsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Make the sorted comments array available in req object
+    req.comments = commentsArray;
+    next();
+  } catch (error) {
+    console.error('Error fetching or sorting comments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 //... rest of your code
 
 // Middleware
@@ -105,12 +134,14 @@ app.set("view engine", "ejs");
 
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const message = "Comments added succesfully";
   const userPostsArray = await userCollection
     .find({}, { projection: { userPosts: 1 } })
     .toArray();
   const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
   storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
-  res.render("home", { storyPosts: storyPosts });
+  res.render("home", { storyPosts: storyPosts, username: username, message: message });
 });
 
 app.get("/easterEgg", sessionValidation, async (req, res) => {
@@ -133,8 +164,8 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   }
 
   // Retrieve query parameters
-  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postID } = req.query;
-
+  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postId } = req.query;
+  console.log(postId);
   // Decode URI components and parse comments if available
   const decodedTitle = title ? decodeURIComponent(title) : '';
   const decodedRandomUsername = randomUsername ? decodeURIComponent(randomUsername) : '';
@@ -145,7 +176,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   const decodedContent = content ? decodeURIComponent(content) : '';
   const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
   const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
-  const decodedPostID = postID ? decodeURIComponent(postID) : '';
+  const decodedPostID = postId ? decodeURIComponent(postId) : '';
 
   // define function to get random elements from an array
   function getRandomElement(array) {
@@ -171,7 +202,8 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 
   // Use the function to get random data
   getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
-  // Now you have randomUsername and randomAvatar, you can proceed with your logic
+    
+    // Now you have randomUsername and randomAvatar, you can proceed with your logic
     res.render('createPost', {
       postTitle: decodedTitle,
       randomGenUsername: randomGenUsername,
@@ -182,20 +214,22 @@ app.get("/createPost", sessionValidation, async (req, res) => {
       postContent: decodedContent,
       comments: parsedComments,
       commentVisibility: decodedVisibility,
-      postID: decodedPostID
+      postId: decodedPostID
     });
   });
 });
 
 const upload = multer();
 
-app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
+app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async function (req, res, next) {
   try {
     // Get form data from request body
-    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postLink, postContent, postId } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true' ? true : false;
     const username = req.session.username;
     const currentDate = new Date();
+
+    console.log(username);
 
     if (!postTitle || !postContent || !postTag) {
       // Redirect back to createPost page with error message as query parameter
@@ -206,44 +240,83 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
       return res.render("createPost", { invalidPosting: invalidPosting });
     }
 
-    // Create a post object
-    const post = {
-      postId: new ObjectId(), // Generate a unique postId (assuming you're using MongoDB ObjectId)
-      postTitle: postTitle,
-      randomGenUsername: randomGenUsername,
-      randomAvatar: randomAvatar,
-      postTag: postTag,
-      postUploadImage: postUploadImage,
-      postLink: postLink,
-      commentVisibility: commentVisibility,
-      postContent: postContent,
-      currentDate: currentDate,
-      comments: [], // Initialize an empty comments array for the post
-    };
+    // Upload image to Cloudinary if an image file is provided
+    let buf64 = req.file.buffer.toString('base64');
+    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function(result) {
+      console.log(result);
+      // Extract the UID of the uploaded image
+      const imageUID = result.public_id;
 
-    console.log(post);
-    // Update user document in the database to add the new post to userPosts array
-    await userCollection.updateOne(
-      { username: username },
-      { $push: { userPosts: post } }
-    );
+      // Now, you can use the imageUID as needed, for example, pass it to postUploadImage
+      const post = {
+        postId: postId ? new ObjectId(postId) : new ObjectId(), // Use existing postId if provided, else create new postId
+        postTitle: postTitle,
+        randomGenUsername: randomGenUsername,
+        randomAvatar: randomAvatar,
+        postTag: postTag,
+        postUploadImage: imageUID, // Pass the image's UID to postUploadImage
+        postLink: postLink,
+        commentVisibility: commentVisibility,
+        postContent: postContent,
+        currentDate: currentDate,
+        comments: [], // Initialize an empty comments array for the post
+        // Add any additional properties here
+      };
 
-    window.alert("post succecssfully created")
+      const user = await userCollection.findOne({ username: username }); 
+
+      if (user) {
+        // find post with postId in userCollection
+        let existingPost = user.savedDrafts.find(draft => draft.postId.toString() === postId);
+
+        if (existingPost) {
+          // Move post to userPosts and remove from savedDrafts
+          await userCollection.updateOne(
+            { username: username },
+            {
+              $push: { userPosts: post },
+              $pull: { savedDrafts: { postId: new ObjectId(postId) } }
+            }
+          );
+          console.log(`Post with postId ${postId} moved to userPosts and removed from savedDrafts.`);
+        } else {
+          // Add new post to userPosts
+          await userCollection.updateOne(
+            { username: username },
+            { $push: { userPosts: post } }
+          );
+          console.log(`New post created and added to userPosts with postId ${post.postId}.`);
+        }
+      } else {
+        console.error("User not found.");
+      }
+      
+      res.status(200).json({ message: "submit post operation was successful" });
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
+
+// works perfectly where post will be moved to userPost folder if user submits their completed post
+// do not change anything here!
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
+<<<<<<< HEAD
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true'
+=======
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true';
+>>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
     const username = req.session.username;
 
     // Create a post object
     const post = {
-      postId: postID ? new ObjectId(postID) : new ObjectId(), // Use existing postId if provided
+      postId: postId ? new ObjectId(postId) : new ObjectId(), // Use existing postId if provided
       postTitle,
       randomGenUsername,
       randomAvatar,
@@ -257,10 +330,10 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
     console.log(post);
 
-    if (postID) {
+    if (postId) {
       // If postId exists, update the existing draft
       await userCollection.updateOne(
-        { username, "savedDrafts.postId": new ObjectId(postID) },
+        { username, "savedDrafts.postId": new ObjectId(postId) },
         { $set: { "savedDrafts.$": post } }
       );
     } else {
@@ -282,6 +355,7 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 });
 
 // Route to display existing story posts
+<<<<<<< HEAD
 app.get("/viewposts", sessionValidation, async (req, res) => {
   const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility } = req.query;
   const { postId } = req.body;
@@ -299,6 +373,86 @@ app.get("/viewposts", sessionValidation, async (req, res) => {
       //console.log(post);
     }
 
+=======
+app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, res) => {
+  const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility, postObjectID, username, message, commentSuccess } = req.query;
+  //const parsedComments = JSON.parse(decodeURIComponent(comments));
+
+  //console.log(username);
+
+  //console.log(postObjectID);
+
+  const allComments = req.comments; // Access sorted comments
+
+  const tempCommentsArray = [];
+
+  allComments.forEach(eachComment => {
+    if (eachComment.postId == postObjectID) {
+      tempCommentsArray.push(eachComment);
+    }
+  });
+
+  // Sort tempCommentsArray by date from latest first to oldest last
+  tempCommentsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // Construct the Cloudinary URL using the UID
+  const cloudinaryUrl = `https://res.cloudinary.com/dagffmxnr/image/upload/w_400,c_scale/${image}.png`;
+
+  res.render('viewpost', {
+        postTitle: decodeURIComponent(title),
+        postId: decodeURIComponent(postObjectID),
+        randomUsername: decodeURIComponent(randomUsername),
+        randomAvatar: decodeURIComponent(randomUserAvatar),
+        postTag: decodeURIComponent(tag),
+        postUploadImage: cloudinaryUrl,
+        postLink: decodeURIComponent(link),
+        postContent: decodeURIComponent(content),
+        comments: tempCommentsArray,
+        commentVisibility: decodeURIComponent(visibility),
+        sessionUsername: username,
+        message: message,
+        commentSuccess: commentSuccess
+  });
+});
+
+// Route to handle comment submission
+app.post("/post/comment", sessionValidation, async (req, res) => {
+  const { sessionUsername, postId, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, comment, message, commentSuccess } = req.body;
+
+  try {
+    const newCommentsData = {
+      postId: postId,
+      commenter: sessionUsername,
+      comment: comment,
+      createdAt: new Date(),
+    }
+
+    const insertionResult = await commentsCollection.insertOne(newCommentsData);
+    
+    console.log(`Successfully inserted document: ${insertionResult.insertedId}`);
+
+    console.log(commentSuccess);
+
+    return res.render('viewpost', {
+      postTitle: postTitle,
+      postId: postId,
+      //randomUsername: decodeURIComponent(randomUsername),
+      //randomAvatar: decodeURIComponent(randomUserAvatar),
+      postTag: postTag,
+      postUploadImage: postUploadImage,
+      postLink: postLink,
+      postContent: postContent,
+      comments: comments,
+      commentVisibility: commentVisibility,
+      sessionUsername: sessionUsername,
+      message: message,
+      commentSuccess: commentSuccess
+    });
+   
+    // Redirect back to the post view with a success message
+    //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
+    
+>>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -371,6 +525,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 app.get("/journal", sessionValidation, async (req, res) => {
   res.render("journal");

@@ -12,11 +12,12 @@
         <div class="row">
             <% savedDrafts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4">
-                    <a href="/createPost?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postID=<%= encodeURIComponent(post.postId) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <a href="/createPost?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postId=<%= encodeURIComponent(post.postId) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
+                                <input type="hidden" name="postId" value="<%= post.postId %>">
                             </div>
                         </div>
                     </a>
