@@ -427,7 +427,6 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 
     // Redirect back to the post view with a success message
     //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

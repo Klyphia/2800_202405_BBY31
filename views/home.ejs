@@ -1,4 +1,7 @@
 <%- include('templates/header.ejs') %>
+<head>
+    <link rel="stylesheet" href="/style/home.css">
+</head>
 <body>
     <!-- A button to open the popup form -->
     <button class="open-button" onclick="openForm()">Open Form</button>
@@ -20,13 +23,25 @@
 
     <!-- Centering the section with class "daily-quote" -->
     <!-- style height is for changing the size of the webpage -->    
-    <div class="container d-flex justify-content-center align-items-center" style="height: 15vh;">
-        
+    <div class="container d-flex justify-content-center align-items-center" style="height: 35vh;">
+        <section class="daily-quote">
+            <h2>Daily Quote</h2>
+            <p id="quote"></p>
+            <script>
+                const quotes = [
+                    "Quote 1",
+                    "Quote 2",
+                    "Quote 3",
+                    "Quote 4",
+                    "Quote 5"
+                ];
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                document.getElementById("quote").textContent = quotes[randomIndex];
+            </script>
+        </section>
     </div>
 
-    <section class="grid-container pb-5" style="position: relative;"> <!-- Add pb-5 class for padding at the bottom -->
-        <p id="quote" style="text-align: center;"></p>
-        <p id="author" style="padding: auto; text-align: center;"></p>
+    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
         <h2 class="text-center">Recent Posts</h2>
         <!-- Filter Dropdown -->
         <div class="text-center mb-4">
@@ -44,19 +59,14 @@
             </select>
         </div>
 
-        <!-- I LOVE DOING INLINE HAHAHAHAAH-->
-        <div class="row" id="postsContainer" style="margin-left: 3px; margin-right: 3px;">
+        <div class="row" id="postsContainer">
             <% storyPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <input type="hidden" name="username" value="<%= username %>">
-                    <input type="hidden" name="message" value="<%= message %>">
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
-                            <!-- I LOVE DOING INLINE HAHAHAHAAH-->
-                            <div class="card-body" style="background-color: #40c9a2; color: #664147; padding-left: 10px; border-radius: 5px;box-shadow: 2px 2px 2px 2px rgba(0, 0, 0.5, 0.5); overflow-x: hidden; border: 10px; ">
+                            <div class="card-body">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
-                                <input type="hidden" name="username" value="<%= username %>">
                             </div>
                         </div>
                     </a>
@@ -85,47 +95,19 @@
 
         // Tag filter
         document.getElementById('postTagFilter').addEventListener('change', function() {
-            // Get the selected tag
             const selectedTag = this.value;
-            // Get all posts
             const posts = document.querySelectorAll('.post-card');
 
-            // Show or hide posts based on the selected tag
             posts.forEach(post => {
-                // Get the post tag
                 const postTag = post.getAttribute('data-post-tag');
-                // Show the post if it's the selected tag or if the selected tag is 'all'
                 if (selectedTag === 'all' || postTag === selectedTag) {
-                    // Show the post
                     post.style.display = 'block';
                 } else {
-                    // Hide the post
                     post.style.display = 'none';
                 }
             });
         });
     </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+</body>
 
-var category = 'inspirational'
-$.ajax({
-    method: 'GET',
-    url: 'https://api.api-ninjas.com/v1/quotes?category=' + category,
-    headers: { 'X-Api-Key': '8blp8mtoceydSVp2wqeILg==hmdrcbahXESxx9aD'},
-    contentType: 'application/json',
-    success: function(result) {
-        console.log(result);
-        // console.log(result[0].quote);
-        document.getElementById('quote').innerHTML = result[0].quote;
-        // console.log(result[0].author);
-        document.getElementById('author').innerHTML = result[0].author;
-    },
-    error: function ajaxError(jqXHR) {
-        console.error('Error: ', jqXHR.responseText);
-    }
-    
-});
-
-</script>
 <%- include('templates/footer.ejs') %>
