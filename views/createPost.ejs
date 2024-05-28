@@ -3,9 +3,9 @@
 <div class="container d-flex h-100 justify-content-center align-items-center">
     <div class="row justify-content-center">
         <div class="col-lg-6">
-            <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data">
-                <!-- Hidden field for postID, randonGenUsername, and randomAvatar -->
-                <input type="hidden" id="postID" name="postID" value="<%= postID %>">
+            <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data" style="margin-bottom: 80px;">
+                <!-- Hidden field for postId, randonGenUsername, and randomAvatar -->
+                <input type="hidden" id="postId" name="postId" value="<%= postId %>">
                 <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
                 <input type="hidden" id="randomAvatar" name="randomAvatar" value="<%= randomAvatar %>">
 
@@ -26,7 +26,7 @@
               
                 <!-- Input field for uploading image -->
                 <label for="postImage">Upload Image:</label>
-                <input type="file" id="postUploadImage" name="postUploadImage" value="<%= postUploadImage %>">
+                <input type="file" id="postUploadImage" name="image" value="<%= postUploadImage %>">
                 <br>
               
                 <!-- Input field for sharing a link -->
@@ -36,7 +36,7 @@
 
                 <!-- Checkbox for making comments visible -->
                 <label for="makeCommentsVisible">Make Comments Visible:</label>
-                <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true" <%= commentVisibility ? 'checked' : '' %>>
+                <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true" <%= commentVisibility ? 'value="true"' : '' %>>
                 <br>
             
                 <label for="postContent">Content:</label>

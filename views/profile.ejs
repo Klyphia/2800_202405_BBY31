@@ -2,19 +2,10 @@
 
 <main class="d-flex flex-column justify-content-between" style="min-height: 100vh;">
     <section class="daily-quote text-center pb-5">
+        <img src="/images/profile-pictures/profile-pic-0.jpg" class="profile-pic" alt="Profile Picture">
         <h2 class="text-center">Welcome <%= username %>!</h2>
         <p id="quote"></p>
-        <script>
-            const quotes = [
-                "Quote 1",
-                "Quote 2",
-                "Quote 3",
-                "Quote 4",
-                "Quote 5"
-            ];
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            document.getElementById("quote").textContent = quotes[randomIndex];
-        </script>
+        <p id="author"></p>
         <a href="/logout" class="btn btn-primary text-center">Sign out</a>
     </section>
 
@@ -32,7 +23,7 @@
                     </a>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <a href="#" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <a href="/savedPosts" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title">Saved Posts</h5>
@@ -42,7 +33,7 @@
                     </a>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <a href="#" class="card-link"> <!-- Add anchor tag wrapping the card -->
+                    <a href="/userPosts" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title">Your Posts</h5>
@@ -51,9 +42,50 @@
                         </div>
                     </a>
                 </div>
-         
         </div>
     </section>
 </main>
 
+<script>
+    // Randomly select a profile picture
+    const profilePictures = [
+      'profile_1.png',
+      'profile_2.png',
+      'profile_3.png',
+      'profile_4.png',
+      'profile_5.png',
+      'profile_6.png',
+      'profile_7.png',
+      'profile_8.png'
+    ];
+
+    const randomPictureIndex = Math.floor(Math.random() * profilePictures.length);
+    const randomPicture = profilePictures[randomPictureIndex];
+
+    console.log(randomPicture);
+    document.querySelector('.profile-pic').src = `/images/profile-pictures/${randomPicture}`;
+  </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+var category = 'inspirational'
+$.ajax({
+    method: 'GET',
+    url: 'https://api.api-ninjas.com/v1/quotes?category=' + category,
+    headers: { 'X-Api-Key': '8blp8mtoceydSVp2wqeILg==hmdrcbahXESxx9aD'},
+    contentType: 'application/json',
+    success: function(result) {
+        console.log(result);
+        // console.log(result[0].quote);
+        document.getElementById('quote').innerHTML = result[0].quote;
+        // console.log(result[0].author);
+        document.getElementById('author').innerHTML = result[0].author;
+    },
+    error: function ajaxError(jqXHR) {
+        console.error('Error: ', jqXHR.responseText);
+    }
+    
+});
+
+</script>
 <%- include('templates/footer.ejs') %>

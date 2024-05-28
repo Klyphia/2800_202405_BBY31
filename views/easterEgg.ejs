@@ -1,4 +1,4 @@
-<%- include('templates/header.ejs') %>
+<%- include('templates/headerEasterEgg.ejs') %>
 <body>
     <!-- A button to open the popup form -->
     <button class="open-button" onclick="openForm()">Open Form</button>
@@ -46,22 +46,11 @@
         <div class="row" id="postsContainer">
             <% storyPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-<<<<<<< HEAD
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postID) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
-=======
-                    <input type="hidden" name="username" value="<%= username %>">
-                    <input type="hidden" name="message" value="<%= message %>">
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
+                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
                         <div class="card shadow">
                             <div class="card-body">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
-<<<<<<< HEAD
-                                <p class="card-text"><%= post.postId %></p>
-=======
-                                <input type="hidden" name="username" value="<%= username %>">
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
                             </div>
                         </div>
                     </a>
@@ -126,4 +115,33 @@ $.ajax({
 });
 
 </script>
-<%- include('templates/footer.ejs') %>
+
+<script>
+        let startTime;
+        let held = false;
+    
+        document.getElementById('compassionetLogo').addEventListener('mousedown', function() {
+            startTime = new Date().getTime();
+            held = true;
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseup', function() {
+            if (held) {
+                let endTime = new Date().getTime();
+                let timeHeld = endTime - startTime;
+    
+                if (timeHeld >= 5000) {
+                    console.log('Image held for 5 seconds or more!');
+                }
+    
+                held = false;
+            }
+        });
+    
+        document.getElementById('compassionetLogo').addEventListener('mouseout', function() {
+            held = false;
+        });
+        
+    </script>
+
+<%- include('templates/footerEasterEgg.ejs') %>
