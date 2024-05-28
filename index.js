@@ -305,13 +305,8 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 // do not change anything here!
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
-<<<<<<< HEAD
-    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true'
-=======
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true';
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
     const username = req.session.username;
 
     // Create a post object
@@ -355,25 +350,6 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 });
 
 // Route to display existing story posts
-<<<<<<< HEAD
-app.get("/viewposts", sessionValidation, async (req, res) => {
-  const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility } = req.query;
-  const { postId } = req.body;
-  console.log('postId: ', postId);
-  const commenterUsername = req.session.username;
-
-  try {
-    // Find the post by postId
-    const post = await userCollection.findOne({ "userPosts.postID": postId });
-    if (!post) {
-      res.status(404);
-      console.log(res.json({ message: "Post not found" }));
-      return;
-    } else {
-      //console.log(post);
-    }
-
-=======
 app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, res) => {
   const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility, postObjectID, username, message, commentSuccess } = req.query;
   //const parsedComments = JSON.parse(decodeURIComponent(comments));
@@ -452,7 +428,6 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     // Redirect back to the post view with a success message
     //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
     
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
