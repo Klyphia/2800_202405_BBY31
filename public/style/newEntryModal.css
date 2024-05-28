@@ -1,0 +1,15 @@
+.modal-close{
+    background-color: darkred;
+}
+
+.modal-content {
+    background-color: #8cdd9e;
+}
+
+.modal-body textarea {
+    background-color: #d4efda;
+}
+
+.modal-save {
+    background-color: #37944b8e;
+}
