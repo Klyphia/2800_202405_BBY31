@@ -1,0 +1,58 @@
+<%- include('templates/header.ejs') %>
+<head>
+    <link rel="stylesheet" href="/style/home.css">
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center">Saved Posts</h2>
+        <div class="row" id="savedPostsContainer">
+            <!-- Saved posts will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedPosts = JSON.parse(localStorage.getItem('savedPosts')) || [];
+            const postsContainer = document.getElementById('savedPostsContainer');
+
+            if (savedPosts.length === 0) {
+                postsContainer.innerHTML = '<p class="text-center">No saved posts.</p>';
+            } else {
+                savedPosts.forEach(postId => {
+                    fetch(`/post/${postId}`)
+                        .then(response => response.json())
+                        .then(post => {
+                            const postCard = document.createElement('div');
+                            postCard.classList.add('col-md-4', 'mb-4', 'post-card');
+                            postCard.setAttribute('data-post-id', post.id);
+
+                            postCard.innerHTML = `
+                                <a href="/viewposts?title=${encodeURIComponent(post.postTitle)}&tag=${encodeURIComponent(post.postTag)}&image=${encodeURIComponent(post.postUploadImage)}&link=${encodeURIComponent(post.postLink)}&content=${encodeURIComponent(post.postContent)}&comments=${encodeURIComponent(JSON.stringify(post.comments))}&visibility=${encodeURIComponent(post.commentVisibility)}" class="card-link">
+                                    <div class="card shadow">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${post.postTitle}</h5>
+                                            <p class="card-text">${post.postTag}</p>
+                                            <button type="button" class="btn btn-danger unsave-button" onclick="unsavePost('${post.id}')">Unsave</button>
+                                        </div>
+                                    </div>
+                                </a>
+                            `;
+
+                            postsContainer.appendChild(postCard);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching post:', error);
+                        });
+                });
+            }
+        });
+
+        function unsavePost(postId) {
+            let savedPosts = JSON.parse(localStorage.getItem('savedPosts')) || [];
+            savedPosts = savedPosts.filter(id => id !== postId);
+            localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+            location.reload(); // Refresh the page to reflect changes
+        }
+    </script>
+</body>
+<%- include('templates/footer.ejs') %>
