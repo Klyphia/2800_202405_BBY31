@@ -36,14 +36,14 @@
                 <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
                 <select id="postTagFilter">
                     <option value="all">All</option>
-                    <!-- Loop through uniqueTags and create an option for each tag -->
-                    <% // Extract unique postTags const uniqueTags=[...new Set(storyPosts.map(post=> post.postTag))];
-                        uniqueTags.forEach(function(tag) {
-                        %>
-                        <option value="<%= tag %>">
-                            <%= tag %>
-                        </option>
-                        <% }); %>
+                            <!-- Loop through uniqueTags and create an option for each tag -->
+                    <% 
+                        // Extract unique postTags
+                        const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
+                        uniqueTags.forEach(function(tag) { 
+                    %>
+                        <option value="<%= tag %>"><%= tag %></option>
+                    <% }); %>
                 </select>
             </div>
 
