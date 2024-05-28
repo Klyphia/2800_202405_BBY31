@@ -12,7 +12,7 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const path = require("path");
 const crypto = require("crypto");
-const {v4: uuid} = require('uuid');
+const { v4: uuid } = require('uuid');
 const cloudinary = require("cloudinary");
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -196,13 +196,13 @@ app.get("/createPost", sessionValidation, async (req, res) => {
       return { randomGenUsername, randomAvatar };
     } catch (error) {
       console.error(`Failed to retrieve random data ${error}`);
-      return { randomGenUsername: '', randomAvatar:'' };
+      return { randomGenUsername: '', randomAvatar: '' };
     }
   }
 
   // Use the function to get random data
   getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
-    
+
     // Now you have randomUsername and randomAvatar, you can proceed with your logic
     res.render('createPost', {
       postTitle: decodedTitle,
@@ -242,7 +242,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 
     // Upload image to Cloudinary if an image file is provided
     let buf64 = req.file.buffer.toString('base64');
-    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function(result) {
+    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function (result) {
       console.log(result);
       // Extract the UID of the uploaded image
       const imageUID = result.public_id;
@@ -263,7 +263,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
         // Add any additional properties here
       };
 
-      const user = await userCollection.findOne({ username: username }); 
+      const user = await userCollection.findOne({ username: username });
 
       if (user) {
         // find post with postId in userCollection
@@ -290,7 +290,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
       } else {
         console.error("User not found.");
       }
-      
+
       res.status(200).json({ message: "submit post operation was successful" });
     });
 
@@ -375,19 +375,19 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   const cloudinaryUrl = `https://res.cloudinary.com/dagffmxnr/image/upload/w_400,c_scale/${image}.png`;
 
   res.render('viewpost', {
-        postTitle: decodeURIComponent(title),
-        postId: decodeURIComponent(postObjectID),
-        randomUsername: decodeURIComponent(randomUsername),
-        randomAvatar: decodeURIComponent(randomUserAvatar),
-        postTag: decodeURIComponent(tag),
-        postUploadImage: cloudinaryUrl,
-        postLink: decodeURIComponent(link),
-        postContent: decodeURIComponent(content),
-        comments: tempCommentsArray,
-        commentVisibility: decodeURIComponent(visibility),
-        sessionUsername: username,
-        message: message,
-        commentSuccess: commentSuccess
+    postTitle: decodeURIComponent(title),
+    postId: decodeURIComponent(postObjectID),
+    randomUsername: decodeURIComponent(randomUsername),
+    randomAvatar: decodeURIComponent(randomUserAvatar),
+    postTag: decodeURIComponent(tag),
+    postUploadImage: cloudinaryUrl,
+    postLink: decodeURIComponent(link),
+    postContent: decodeURIComponent(content),
+    comments: tempCommentsArray,
+    commentVisibility: decodeURIComponent(visibility),
+    sessionUsername: username,
+    message: message,
+    commentSuccess: commentSuccess
   });
 });
 
@@ -404,7 +404,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     }
 
     const insertionResult = await commentsCollection.insertOne(newCommentsData);
-    
+
     console.log(`Successfully inserted document: ${insertionResult.insertedId}`);
 
     console.log(commentSuccess);
@@ -424,10 +424,9 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
       message: message,
       commentSuccess: commentSuccess
     });
-   
+
     // Redirect back to the post view with a success message
     //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -454,7 +453,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     comments: postComments,
     commentVisibility: decodeURIComponent(visibility),
     commenterUsername: commenterUsername
-});
+  });
   console.log(postComments);
 });
 
@@ -880,6 +879,22 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
 
 app.get("/viewEntries", sessionValidation, async (req, res) => {
   res.render("viewEntries");
+});
+
+app.get('/getMoodData', sessionValidation, async (req, res) => {
+  const userId = req.session.userid;
+  try {
+    const userMoodData = await moodHistory.findOne({ userId: userId });
+    if (userMoodData) {
+      res.json(userMoodData.mood);
+      console.log(userMoodData.mood);
+    } else {
+      res.json([]);
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 app.get("/moodHistory", sessionValidation, async (req, res) => {
