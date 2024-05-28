@@ -15,8 +15,9 @@
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const moodData = fetch("/getMoodData");
+    document.addEventListener('DOMContentLoaded', async function () {
+        const response = await fetch("/getMoodData");
+        const moodData = await response.json();
         const calendarDaysContainer = document.getElementById('calendar-days');
 
         const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
@@ -37,6 +38,16 @@
             `;
             calendarDaysContainer.appendChild(dayElement);
         }
+
+        moodData.forEach(mood => {
+                const moodDate = new Date(mood.timestamp);
+                const day = moodDate.getDate();
+
+                const dayElements = document.querySelectorAll('.calendar-days .day');
+                dayElements[day - 1 + firstDayOfMonth].style.backgroundColor = mood.colour;
+                console.log(mood.colour);
+                dayElements[day - 1 + firstDayOfMonth].querySelector('.mood').textContent = 'Mood recorded';
+            });
     });
 </script>
 
