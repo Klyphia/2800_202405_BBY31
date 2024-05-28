@@ -13,10 +13,14 @@
             <form class="form-container" id="formGrid">
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
-                    <button></button>
-                    
+                    <button id="moodButtons" class="redButton" onclick="closeForm()"></button>
+                    <button id="moodButtons" class="orangeButton" onclick="closeForm()"></button>
+                    <button id="moodButtons" class="yellowButton" onclick="closeForm()"></button>
+                    <button id="moodButtons" class="lightGreenButton" onclick="closeForm()"></button>
+                    <button id="moodButtons" class="greenButton" onclick="closeForm()"></button>
                 </div>
                 <button type="button" class="cancel" onclick="closeForm()">Close</button>
+                <button type="button" class="moodDetails" onclick="openDetails()">Colour Details</button>
             </form>
         </div>
 
@@ -78,6 +82,11 @@
 
             function closeForm() {
                 document.getElementById("myForm").style.display = "none";
+                document.getElementById("colourDetails").style.display = "none";
+            }
+
+            function openDetails() {
+                document.getElementById("colorDetails").style.display = "block";
             }
 
             var slider = document.getElementById("myRange");
