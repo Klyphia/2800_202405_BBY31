@@ -21,7 +21,7 @@ body {
 
 #postForm {
     width: 100%;
-    height: 76.5%;
+    height: 78%;
     max-width: 600px;
     min-width: 450px;
     padding: 40px;
@@ -34,6 +34,7 @@ body {
     box-sizing: border-box;
     margin-top: 123px;
     overflow: hidden;
+    margin-bottom: 10px;
 }
 
 /* Label styling */
