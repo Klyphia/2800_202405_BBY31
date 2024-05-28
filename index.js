@@ -229,7 +229,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
     const username = req.session.username;
     const currentDate = new Date();
 
-    console.log(username);
+    console.log("Username: ", username);
 
     if (!postTitle || !postContent || !postTag) {
       // Redirect back to createPost page with error message as query parameter
