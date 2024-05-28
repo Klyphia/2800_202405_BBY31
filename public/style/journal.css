@@ -1,14 +1,44 @@
-.journal-card {
-    width: 50%;
-    height: auto;    
+#calendar-container {
+    margin-top: 20px;
 }
 
-.journal-container {
-    margin-top: 10%;
+.calendar {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-.col-sm-6 {
+.row {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+}
+
+.col {
+    flex: 1;
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    min-height: 50px;
+}
+
+.header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.empty {
+    background-color: transparent;
+    border: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .calendar {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .col {
+        padding: 5px;
+    }
 }

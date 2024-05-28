@@ -2,20 +2,22 @@
 <div class="container my-4" id="calendar-container">
     <h2>Monthly Mood Calendar</h2>
     <div id="calendar" class="calendar">
-        <div class="row">
-            <div class="col header">Sun</div>
-            <div class="col header">Mon</div>
-            <div class="col header">Tue</div>
-            <div class="col header">Wed</div>
-            <div class="col header">Thu</div>
-            <div class="col header">Fri</div>
-            <div class="col header">Sat</div>
+        <div class="row calendar-row">
+            <div class="col header calendar-header">Sun</div>
+            <div class="col header calendar-header">Mon</div>
+            <div class="col header calendar-header">Tue</div>
+            <div class="col header calendar-header">Wed</div>
+            <div class="col header calendar-header">Thu</div>
+            <div class="col header calendar-header">Fri</div>
+            <div class="col header calendar-header">Sat</div>
         </div>
         <div id="calendar-days" class="calendar-days"></div>
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+        const response = await fetch("/getMoodData");
+        const moodData = await response.json();
         const calendarDaysContainer = document.getElementById('calendar-days');
 
         const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
@@ -36,6 +38,16 @@
             `;
             calendarDaysContainer.appendChild(dayElement);
         }
+
+        moodData.forEach(mood => {
+                const moodDate = new Date(mood.timestamp);
+                const day = moodDate.getDate();
+
+                const dayElements = document.querySelectorAll('.calendar-days .day');
+                dayElements[day - 1 + firstDayOfMonth].style.backgroundColor = mood.colour;
+                console.log(mood.colour);
+                dayElements[day - 1 + firstDayOfMonth].querySelector('.mood').textContent = 'Mood recorded';
+            });
     });
 </script>
 
