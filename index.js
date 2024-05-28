@@ -12,7 +12,7 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const path = require("path");
 const crypto = require("crypto");
-const {v4: uuid} = require('uuid');
+const { v4: uuid } = require('uuid');
 const cloudinary = require("cloudinary");
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -196,13 +196,13 @@ app.get("/createPost", sessionValidation, async (req, res) => {
       return { randomGenUsername, randomAvatar };
     } catch (error) {
       console.error(`Failed to retrieve random data ${error}`);
-      return { randomGenUsername: '', randomAvatar:'' };
+      return { randomGenUsername: '', randomAvatar: '' };
     }
   }
 
   // Use the function to get random data
   getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
-    
+
     // Now you have randomUsername and randomAvatar, you can proceed with your logic
     res.render('createPost', {
       postTitle: decodedTitle,
@@ -242,7 +242,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 
     // Upload image to Cloudinary if an image file is provided
     let buf64 = req.file.buffer.toString('base64');
-    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function(result) {
+    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function (result) {
       console.log(result);
       // Extract the UID of the uploaded image
       const imageUID = result.public_id;
@@ -263,7 +263,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
         // Add any additional properties here
       };
 
-      const user = await userCollection.findOne({ username: username }); 
+      const user = await userCollection.findOne({ username: username });
 
       if (user) {
         // find post with postId in userCollection
@@ -290,7 +290,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
       } else {
         console.error("User not found.");
       }
-      
+
       res.status(200).json({ message: "submit post operation was successful" });
     });
 
@@ -305,13 +305,8 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 // do not change anything here!
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
-<<<<<<< HEAD
-    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postID } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true'
-=======
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
     const commentVisibility = req.body.commentVisibility === 'true';
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
     const username = req.session.username;
 
     // Create a post object
@@ -355,25 +350,6 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 });
 
 // Route to display existing story posts
-<<<<<<< HEAD
-app.get("/viewposts", sessionValidation, async (req, res) => {
-  const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility } = req.query;
-  const { postId } = req.body;
-  console.log('postId: ', postId);
-  const commenterUsername = req.session.username;
-
-  try {
-    // Find the post by postId
-    const post = await userCollection.findOne({ "userPosts.postID": postId });
-    if (!post) {
-      res.status(404);
-      console.log(res.json({ message: "Post not found" }));
-      return;
-    } else {
-      //console.log(post);
-    }
-
-=======
 app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, res) => {
   const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility, postObjectID, username, message, commentSuccess } = req.query;
   //const parsedComments = JSON.parse(decodeURIComponent(comments));
@@ -399,19 +375,19 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   const cloudinaryUrl = `https://res.cloudinary.com/dagffmxnr/image/upload/w_400,c_scale/${image}.png`;
 
   res.render('viewpost', {
-        postTitle: decodeURIComponent(title),
-        postId: decodeURIComponent(postObjectID),
-        randomUsername: decodeURIComponent(randomUsername),
-        randomAvatar: decodeURIComponent(randomUserAvatar),
-        postTag: decodeURIComponent(tag),
-        postUploadImage: cloudinaryUrl,
-        postLink: decodeURIComponent(link),
-        postContent: decodeURIComponent(content),
-        comments: tempCommentsArray,
-        commentVisibility: decodeURIComponent(visibility),
-        sessionUsername: username,
-        message: message,
-        commentSuccess: commentSuccess
+    postTitle: decodeURIComponent(title),
+    postId: decodeURIComponent(postObjectID),
+    randomUsername: decodeURIComponent(randomUsername),
+    randomAvatar: decodeURIComponent(randomUserAvatar),
+    postTag: decodeURIComponent(tag),
+    postUploadImage: cloudinaryUrl,
+    postLink: decodeURIComponent(link),
+    postContent: decodeURIComponent(content),
+    comments: tempCommentsArray,
+    commentVisibility: decodeURIComponent(visibility),
+    sessionUsername: username,
+    message: message,
+    commentSuccess: commentSuccess
   });
 });
 
@@ -428,7 +404,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     }
 
     const insertionResult = await commentsCollection.insertOne(newCommentsData);
-    
+
     console.log(`Successfully inserted document: ${insertionResult.insertedId}`);
 
     console.log(commentSuccess);
@@ -448,11 +424,10 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
       message: message,
       commentSuccess: commentSuccess
     });
-   
+
     // Redirect back to the post view with a success message
     //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
-    
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -479,7 +454,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     comments: postComments,
     commentVisibility: decodeURIComponent(visibility),
     commenterUsername: commenterUsername
-});
+  });
   console.log(postComments);
 });
 

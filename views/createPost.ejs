@@ -3,7 +3,7 @@
 <div class="container d-flex h-100 justify-content-center align-items-center">
     <div class="row justify-content-center">
         <div class="col-lg-6">
-            <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data" style="margin-bottom: 80px;">
+            <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data" style="margin-bottom: 80px; overflow: hidden;">
                 <!-- Hidden field for postId, randonGenUsername, and randomAvatar -->
                 <input type="hidden" id="postId" name="postId" value="<%= postId %>">
                 <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
@@ -21,6 +21,8 @@
                     <option value="#Recovery" <%= postTag === '#Recovery' ? 'selected' : '' %>>#Recovery</option>
                     <option value="#Gloomy" <%= postTag === '#Gloomy' ? 'selected' : '' %>>#Gloomy</option>
                     <option value="#Trying_Something_New" <%= postTag === '#Trying_Something_New' ? 'selected' : '' %>>#Trying Something New</option>
+                    <option value="#Unsure" <%= postTag === '#Unsure' ? 'selected' : '' %>>#I'm Unsure</option>
+
                 </select>
                 <br>
               
@@ -40,7 +42,7 @@
                 <br>
             
                 <label for="postContent">Content:</label>
-                <textarea id="postContent" name="postContent" rows="4" required><%= postContent %></textarea>
+                <textarea id="postContent" name="postContent" rows="3" required><%= postContent %></textarea>
                 <br>
             
                 <!-- Submit button -->

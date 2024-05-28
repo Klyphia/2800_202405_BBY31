@@ -33,6 +33,7 @@
             <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
             <select id="postTagFilter">
                 <option value="all">All</option>
+                        <!-- Loop through uniqueTags and create an option for each tag -->
                 <% 
                     // Extract unique postTags
                     const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
@@ -43,25 +44,19 @@
             </select>
         </div>
 
-        <div class="row" id="postsContainer">
+        <!-- I LOVE DOING INLINE HAHAHAHAAH-->
+        <div class="row" id="postsContainer" style="margin-left: 3px; margin-right: 3px;">
             <% storyPosts.forEach(function(post) { %>
                 <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-<<<<<<< HEAD
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postID) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
-=======
                     <input type="hidden" name="username" value="<%= username %>">
                     <input type="hidden" name="message" value="<%= message %>">
                     <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
                         <div class="card shadow">
-                            <div class="card-body">
+                            <!-- I LOVE DOING INLINE HAHAHAHAAH-->
+                            <div class="card-body" style="background-color: #40c9a2; color: #664147; padding-left: 10px; border-radius: 5px;box-shadow: 2px 2px 2px 2px rgba(0, 0, 0.5, 0.5); overflow-x: hidden; border: 10px; ">
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
-<<<<<<< HEAD
-                                <p class="card-text"><%= post.postId %></p>
-=======
                                 <input type="hidden" name="username" value="<%= username %>">
->>>>>>> a9dcf65ce4581bcb147bf04f0ba9a0309585c986
                             </div>
                         </div>
                     </a>
@@ -90,14 +85,21 @@
 
         // Tag filter
         document.getElementById('postTagFilter').addEventListener('change', function() {
+            // Get the selected tag
             const selectedTag = this.value;
+            // Get all posts
             const posts = document.querySelectorAll('.post-card');
 
+            // Show or hide posts based on the selected tag
             posts.forEach(post => {
+                // Get the post tag
                 const postTag = post.getAttribute('data-post-tag');
+                // Show the post if it's the selected tag or if the selected tag is 'all'
                 if (selectedTag === 'all' || postTag === selectedTag) {
+                    // Show the post
                     post.style.display = 'block';
                 } else {
+                    // Hide the post
                     post.style.display = 'none';
                 }
             });
