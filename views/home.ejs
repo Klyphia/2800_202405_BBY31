@@ -1,113 +1,130 @@
 <%- include('templates/header.ejs') %>
-<head>
-    <link rel="stylesheet" href="/style/home.css">
-</head>
-<body>
-    <!-- A button to open the popup form -->
-    <button class="open-button" onclick="openForm()">Open Form</button>
 
-    <!-- The form -->
-    <div class="form-popup" id="myForm" style="display:none;"> <!-- Ensure the form is hidden by default -->
-        <form class="form-container">
-            <h1>How are you feeling today?</h1>
+    <head>
+        <link rel="stylesheet" href="style/home.css">
+    </head>
 
-            <div class="slidecontainer">
-                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-                <p>Value: <span id="demo"></span></p> <!-- Display the slider value -->
+    <body>
+        <!-- A button to open the popup form -->
+        <button class="open-button" onclick="openForm()">Open Form</button>
+
+        <!-- The form -->
+        <div class="form-popup" id="myForm">
+            <form class="form-container" id="formGrid">
+                <p class="moodTitle">How are you feeling today?</p>
+                <div id="moodButton">
+                    <button></button>
+                    
+                </div>
+                <button type="button" class="cancel" onclick="closeForm()">Close</button>
+            </form>
+        </div>
+
+        <!-- Centering the section with class "daily-quote" -->
+        <!-- style height is for changing the size of the webpage -->
+        <div class="container d-flex justify-content-center align-items-center" style="height: 15vh;">
+
+        </div>
+
+        <section class="grid-container pb-5" style="position: relative;">
+            <!-- Add pb-5 class for padding at the bottom -->
+            <p id="quote" style="text-align: center;"></p>
+            <p id="author" style="padding: auto; text-align: center;"></p>
+            <h2 class="text-center">Recent Posts</h2>
+            <!-- Filter Dropdown -->
+            <div class="text-center mb-4">
+                <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
+                <select id="postTagFilter">
+                    <option value="all">All</option>
+                            <!-- Loop through uniqueTags and create an option for each tag -->
+                    <% 
+                        // Extract unique postTags
+                        const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
+                        uniqueTags.forEach(function(tag) { 
+                    %>
+                        <option value="<%= tag %>"><%= tag %></option>
+                    <% }); %>
+                </select>
             </div>
 
-            <button type="submit" class="btn">Submit</button>
-            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-        </form>
-    </div>
-
-    <!-- Centering the section with class "daily-quote" -->
-    <!-- style height is for changing the size of the webpage -->    
-    <div class="container d-flex justify-content-center align-items-center" style="height: 35vh;">
-        <section class="daily-quote">
-            <h2>Daily Quote</h2>
-            <p id="quote"></p>
-            <script>
-                const quotes = [
-                    "Quote 1",
-                    "Quote 2",
-                    "Quote 3",
-                    "Quote 4",
-                    "Quote 5"
-                ];
-                const randomIndex = Math.floor(Math.random() * quotes.length);
-                document.getElementById("quote").textContent = quotes[randomIndex];
-            </script>
-        </section>
-    </div>
-
-    <section class="grid-container pb-5"> <!-- Add pb-5 class for padding at the bottom -->
-        <h2 class="text-center">Recent Posts</h2>
-        <!-- Filter Dropdown -->
-        <div class="text-center mb-4">
-            <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
-            <select id="postTagFilter">
-                <option value="all">All</option>
-                        <!-- Loop through uniqueTags and create an option for each tag -->
-                <% 
-                    // Extract unique postTags
-                    const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
-                    uniqueTags.forEach(function(tag) { 
-                %>
-                    <option value="<%= tag %>"><%= tag %></option>
-                <% }); %>
-            </select>
-        </div>
-
-        <div class="row" id="postsContainer">
-            <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&comments=<%= encodeURIComponent(JSON.stringify(post.comments)) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>" class="card-link"> <!-- Add anchor tag wrapping the card -->
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= post.postTitle %></h5>
-                                <p class="card-text"><%= post.postTag %></p>
+            <div class="row" id="postsContainer">
+                <% storyPosts.forEach(function(post) { %>
+                    <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
+                        <input type="hidden" name="username" value="<%= username %>">
+                        <input type="hidden" name="message" value="<%= message %>">
+                        <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>"
+                            class="card-link"> <!-- Add anchor tag wrapping the card -->
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <%= post.postTitle %>
+                                    </h5>
+                                    <p class="card-text">
+                                        <%= post.postTag %>
+                                    </p>
+                                    <input type="hidden" name="username" value="<%= username %>">
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-            <% }); %>
-        </div>
-    </section>
-    
-    <script>
-        function openForm() {
-            document.getElementById("myForm").style.display = "block";
-        }
+                        </a>
+                    </div>
+                    <% }); %>
+            </div>
+        </section>
 
-        function closeForm() {
-            document.getElementById("myForm").style.display = "none";
-        }
+        <script>
+            function openForm() {
+                document.getElementById("myForm").style.display = "block";
+            }
 
-        var slider = document.getElementById("myRange");
-        var output = document.getElementById("demo");
-        output.innerHTML = slider.value; // Display the default slider value
+            function closeForm() {
+                document.getElementById("myForm").style.display = "none";
+            }
 
-        // Update the current slider value (each time you drag the slider handle)
-        slider.oninput = function () {
-            output.innerHTML = this.value;
-        }
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+            output.innerHTML = slider.value; // Display the default slider value
 
-        // Tag filter
-        document.getElementById('postTagFilter').addEventListener('change', function() {
-            const selectedTag = this.value;
-            const posts = document.querySelectorAll('.post-card');
+            // Update the current slider value (each time you drag the slider handle)
+            slider.oninput = function () {
+                output.innerHTML = this.value;
+            }
 
-            posts.forEach(post => {
-                const postTag = post.getAttribute('data-post-tag');
-                if (selectedTag === 'all' || postTag === selectedTag) {
-                    post.style.display = 'block';
-                } else {
-                    post.style.display = 'none';
-                }
+            // Tag filter
+            document.getElementById('postTagFilter').addEventListener('change', function () {
+                const selectedTag = this.value;
+                const posts = document.querySelectorAll('.post-card');
+
+                posts.forEach(post => {
+                    const postTag = post.getAttribute('data-post-tag');
+                    if (selectedTag === 'all' || postTag === selectedTag) {
+                        post.style.display = 'block';
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
             });
-        });
-    </script>
-</body>
+        </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
 
-<%- include('templates/footer.ejs') %>
+            var category = 'inspirational'
+            $.ajax({
+                method: 'GET',
+                url: 'https://api.api-ninjas.com/v1/quotes?category=' + category,
+                headers: { 'X-Api-Key': '8blp8mtoceydSVp2wqeILg==hmdrcbahXESxx9aD' },
+                contentType: 'application/json',
+                success: function (result) {
+                    console.log(result);
+                    // console.log(result[0].quote);
+                    document.getElementById('quote').innerHTML = result[0].quote;
+                    // console.log(result[0].author);
+                    document.getElementById('author').innerHTML = result[0].author;
+                },
+                error: function ajaxError(jqXHR) {
+                    console.error('Error: ', jqXHR.responseText);
+                }
+
+            });
+
+        </script>
+        <%- include('templates/footer.ejs') %>
