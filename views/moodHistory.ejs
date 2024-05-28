@@ -14,69 +14,27 @@
         <div id="calendar-days" class="calendar-days"></div>
     </div>
 </div>
-
 <script>
-    document.addEventListener('DOMContentLoaded', async function () {
+    document.addEventListener('DOMContentLoaded', function () {
         const calendarDaysContainer = document.getElementById('calendar-days');
-        const currentDate = new Date();
-        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        
-        // Fetch mood data
-        let moodData = [];
-        try {
-            const response = await fetch('/getMoodData');
-            moodData = await response.json();
-        } catch (err) {
-            console.error('Error fetching mood data:', err);
+
+        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+        const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.classList.add('day');
+            calendarDaysContainer.appendChild(emptyDay);
         }
 
-        // Function to color the date cell based on mood data
-        function colorDateCell(date) {
-            const dateStr = date.toISOString().split('T')[0];
-            const mood = moodData.find(m => new Date(m.timestamp).toISOString().split('T')[0] === dateStr);
-            if (mood) {
-                return `background-color: ${mood.colour};`;
-            }
-            return '';
-        }
-
-        // Fill in the calendar days
-        const daysInWeek = 7;
-        const startDay = firstDayOfMonth.getDay();
-        
-        // Empty cells before the start of the month
-        for (let i = 0; i < startDay; i++) {
-            const emptyCell = document.createElement('div');
-            emptyCell.className = 'col empty';
-            calendarDaysContainer.appendChild(emptyCell);
-        }
-
-        // Days of the month
-        let dayCounter = 1;
-        for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            const dayCell = document.createElement('div');
-            dayCell.className = 'col';
-            dayCell.innerText = day;
-            dayCell.style.cssText = colorDateCell(date);
-            calendarDaysContainer.appendChild(dayCell);
-
-            // Start a new row after every 7 days
-            if ((day + startDay) % daysInWeek === 0) {
-                const newRow = document.createElement('div');
-                newRow.className = 'row';
-                calendarDaysContainer.appendChild(newRow);
-            }
-            dayCounter++;
-        }
-
-        // Fill in the remaining empty cells
-        const remainingEmptyCells = daysInWeek - (dayCounter % daysInWeek);
-        for (let i = 0; i < remainingEmptyCells; i++) {
-            const emptyCell = document.createElement('div');
-            emptyCell.className = 'col empty';
-            calendarDaysContainer.appendChild(emptyCell);
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.classList.add('day');
+            dayElement.innerHTML = `
+                <span>${i}</span>
+                <span class="mood">No mood recorded</span>
+            `;
+            calendarDaysContainer.appendChild(dayElement);
         }
     });
 </script>
