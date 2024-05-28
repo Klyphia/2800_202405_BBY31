@@ -888,6 +888,7 @@ app.get('/getMoodData', sessionValidation, async (req, res) => {
     const userMoodData = await moodHistory.findOne({ userId: userId });
     if (userMoodData) {
       res.json(userMoodData.mood);
+      console.log(userMoodData.mood);
     } else {
       res.json([]);
     }
