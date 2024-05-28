@@ -14,7 +14,7 @@
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
                     <button></button>
-
+                    
                 </div>
                 <button type="button" class="cancel" onclick="closeForm()">Close</button>
             </form>
@@ -36,14 +36,14 @@
                 <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
                 <select id="postTagFilter">
                     <option value="all">All</option>
-                    <!-- Loop through uniqueTags and create an option for each tag -->
-                    <% // Extract unique postTags const uniqueTags=[...new Set(storyPosts.map(post=> post.postTag))];
-                        uniqueTags.forEach(function(tag) {
-                        %>
-                        <option value="<%= tag %>">
-                            <%= tag %>
-                        </option>
-                        <% }); %>
+                            <!-- Loop through uniqueTags and create an option for each tag -->
+                    <% 
+                        // Extract unique postTags
+                        const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
+                        uniqueTags.forEach(function(tag) { 
+                    %>
+                        <option value="<%= tag %>"><%= tag %></option>
+                    <% }); %>
                 </select>
             </div>
 
@@ -90,8 +90,6 @@
                 output.innerHTML = this.value;
             }
 
-        </script>
-        <script>
             // Tag filter
             document.getElementById('postTagFilter').addEventListener('change', function () {
                 const selectedTag = this.value;
