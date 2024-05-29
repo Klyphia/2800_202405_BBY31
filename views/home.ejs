@@ -57,8 +57,8 @@
                         <input type="hidden" name="username" value="<%= username %>">
                         <input type="hidden" name="message" value="<%= message %>">
                         <a href="/viewposts?title=<%= encodeURIComponent(post.postTitle) %>&tag=<%= encodeURIComponent(post.postTag) %>&image=<%= encodeURIComponent(post.postUploadImage) %>&link=<%= encodeURIComponent(post.postLink) %>&content=<%= encodeURIComponent(post.postContent) %>&visibility=<%= encodeURIComponent(post.commentVisibility) %>&postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>"
-                            class="card-link"> <!-- Add anchor tag wrapping the card -->
-                            <div class="card shadow cardBlock">
+                            class="card-link"> 
+                            <div class="card shadow">
                                 <div class="card-body">
                                     <h5 class="card-title">
                                         <%= post.postTitle %>
