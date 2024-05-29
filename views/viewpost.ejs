@@ -32,6 +32,7 @@
                               <img src="<%= postUploadImage %>" alt="Image" class="img-fluid mb-3">
                           </div>
                         <% } %>
+
                         <% if (postLink) { %>
                             <a href="<%= postLink %>" class="btn btn-link mb-3">Read more</a>
                         <% } %>
@@ -74,7 +75,7 @@
         </div>
         
         <!-- Comments Section -->
-        <% if (commentVisibility === 'true') { %>
+        <% if (commentVisibility) { %>
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
@@ -82,7 +83,7 @@
                             <h2 class="card-title">Comments</h2>
                             <% comments.forEach(comment => { %>
                                 <div class="comment mb-3">
-                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comments %></p>
+                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comment %></p>
                                     <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
                                 </div>
                             <% }); %>

@@ -42,6 +42,12 @@ var { database } = include("databaseConnection");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
+const postsCollection = database.db(mongodb_database).collection("posts");
+
+const savedPostsCollection = database.db(mongodb_database).collection("savedPosts");
+
+const draftsCollection = database.db(mongodb_database).collection("drafts");
+
 const commentsCollection = database.db(mongodb_database).collection("comments");
 
 const randomCollection = database.db(mongodb_database).collection("random_gen_collection");
@@ -135,14 +141,17 @@ app.set("view engine", "ejs");
 // Routes
 app.get("/", sessionValidation, async (req, res) => {
   const username = req.session.username;
-  const message = "Comments added succesfully";
-  const userPostsArray = await userCollection
-    .find({}, { projection: { userPosts: 1 } })
-    .toArray();
-  const storyPosts = userPostsArray.flatMap((user) => user.userPosts);
+  const message = "Comments added successfully";
+
+  // Fetch all posts from postsCollection
+  const storyPosts = await postsCollection.find({}).toArray();
+
+  // Sort the posts by date
   storyPosts.sort((a, b) => new Date(b.currentDate) - new Date(a.currentDate));
+
   res.render("home", { storyPosts: storyPosts, username: username, message: message });
 });
+
 
 app.get("/easterEgg", sessionValidation, async (req, res) => {
   const userPostsArray = await userCollection
@@ -153,7 +162,7 @@ app.get("/easterEgg", sessionValidation, async (req, res) => {
   res.render("easterEgg", { storyPosts: storyPosts });
 });
 
-// Route for creating user post
+// Route for creating user post - sends to create post page should not need to touch
 app.get("/createPost", sessionValidation, async (req, res) => {
   const username = req.session.username;
   const result = await userCollection.findOne({ username });
@@ -214,7 +223,8 @@ app.get("/createPost", sessionValidation, async (req, res) => {
       postContent: decodedContent,
       comments: parsedComments,
       commentVisibility: decodedVisibility,
-      postId: decodedPostID
+      postId: decodedPostID,
+      username: username
     });
   });
 });
@@ -230,6 +240,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
     const currentDate = new Date();
 
     console.log(username);
+    console.log(commentVisibility);
 
     if (!postTitle || !postContent || !postTag) {
       // Redirect back to createPost page with error message as query parameter
@@ -240,60 +251,38 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
       return res.render("createPost", { invalidPosting: invalidPosting });
     }
 
-    // Upload image to Cloudinary if an image file is provided
-    let buf64 = req.file.buffer.toString('base64');
-    cloudinary.uploader.upload("data:image/png;base64," + buf64, async function(result) {
+    let imageUID = null; // Default value for postUploadImage
+
+    // Check if an image file was uploaded
+    if (req.file) {
+      // Upload image to Cloudinary if an image file is provided
+      const buf64 = req.file.buffer.toString('base64');
+      const result = await cloudinary.uploader.upload("data:image/png;base64," + buf64);
       console.log(result);
       // Extract the UID of the uploaded image
-      const imageUID = result.public_id;
+      imageUID = result.public_id;
+    }
 
-      // Now, you can use the imageUID as needed, for example, pass it to postUploadImage
-      const post = {
-        postId: postId ? new ObjectId(postId) : new ObjectId(), // Use existing postId if provided, else create new postId
-        postTitle: postTitle,
-        randomGenUsername: randomGenUsername,
-        randomAvatar: randomAvatar,
-        postTag: postTag,
-        postUploadImage: imageUID, // Pass the image's UID to postUploadImage
-        postLink: postLink,
-        commentVisibility: commentVisibility,
-        postContent: postContent,
-        currentDate: currentDate,
-        comments: [], // Initialize an empty comments array for the post
-        // Add any additional properties here
-      };
+    // Create the post object
+    const post = {
+      postId: postId ? new ObjectId(postId) : new ObjectId(), // Use existing postId if provided, else create new postId
+      postTitle: postTitle,
+      randomGenUsername: randomGenUsername,
+      randomAvatar: randomAvatar,
+      postTag: postTag,
+      postUploadImage: imageUID, // Pass the image's UID to postUploadImage
+      postLink: postLink,
+      commentVisibility: commentVisibility,
+      postContent: postContent,
+      currentDate: currentDate,
+      username: username
+    };
 
-      const user = await userCollection.findOne({ username: username }); 
+    await postsCollection.insertOne(post);
 
-      if (user) {
-        // find post with postId in userCollection
-        let existingPost = user.savedDrafts.find(draft => draft.postId.toString() === postId);
-
-        if (existingPost) {
-          // Move post to userPosts and remove from savedDrafts
-          await userCollection.updateOne(
-            { username: username },
-            {
-              $push: { userPosts: post },
-              $pull: { savedDrafts: { postId: new ObjectId(postId) } }
-            }
-          );
-          console.log(`Post with postId ${postId} moved to userPosts and removed from savedDrafts.`);
-        } else {
-          // Add new post to userPosts
-          await userCollection.updateOne(
-            { username: username },
-            { $push: { userPosts: post } }
-          );
-          console.log(`New post created and added to userPosts with postId ${post.postId}.`);
-        }
-      } else {
-        console.error("User not found.");
-      }
-      
-      res.status(200).json({ message: "submit post operation was successful" });
-    });
-
+    console.log(post);
+    
+    res.status(200).json({ message: "submit post operation was successful" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -306,7 +295,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const commentVisibility = req.body.commentVisibility === 'true'? true : false;
     const username = req.session.username;
 
     // Create a post object
@@ -320,27 +309,31 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
       postLink,
       commentVisibility,
       postContent,
-      comments: [], // Initialize an empty comments array for the post
+      username: username
     };
 
     console.log(post);
 
     if (postId) {
       // If postId exists, update the existing draft
-      await userCollection.updateOne(
-        { username, "savedDrafts.postId": new ObjectId(postId) },
-        { $set: { "savedDrafts.$": post } }
+      await draftsCollection.updateOne(
+        { postId: new ObjectId(postId) }, // Filter for the existing postId
+        { $set: {
+          postTitle: post.postTitle,
+          randomGenUsername: post.randomGenUsername,
+          randomAvatar: post.randomAvatar,
+          postTag: post.postTag,
+          postUploadImage: post.postUploadImage,
+          postLink: post.postLink,
+          commentVisibility: post.commentVisibility,
+          postContent: post.postContent,
+          username: post.username
+        }}
       );
     } else {
       // If no postId, insert a new draft
-      await userCollection.updateOne(
-        { username },
-        { $push: { savedDrafts: post } }
-      );
+      await draftsCollection.insertOne(post);
     }
-
-    const user = await userCollection.findOne({ username });
-    console.log(`Number of saved drafts: ${user.savedDrafts.length}`);
 
     res.redirect("/postConfirmation"); // Redirect to confirmation page
   } catch (error) {
@@ -351,49 +344,86 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
 // Route to display existing story posts
 app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, res) => {
-  const { title, randomUsername, randomUserAvatar, tag, image, link, content, visibility, postObjectID, username, message, commentSuccess } = req.query;
-  //const parsedComments = JSON.parse(decodeURIComponent(comments));
+  const { postObjectID, username, message, commentSuccess } = req.query;
 
-  //console.log(username);
+  console.log(postObjectID);
 
-  //console.log(postObjectID);
+  let currentPost;
 
-  const allComments = req.comments; // Access sorted comments
+  try {
+    // Convert postObjectID to ObjectId if necessary
+    const postIdObj = new ObjectId(postObjectID);
+    
+    currentPost = await postsCollection.findOne({ postId: postIdObj });
+  } catch (error) {
+    console.error('Error converting postObjectID to ObjectId or querying the database:', error);
+    res.status(500).json({ message: "Internal server error" });
+    return;
+  }
 
-  const tempCommentsArray = [];
+  if (!currentPost) {
+    res.status(404).json({ message: "Post not found" });
+    return;
+  }
 
-  allComments.forEach(eachComment => {
-    if (eachComment.postId == postObjectID) {
-      tempCommentsArray.push(eachComment);
-    }
-  });
+  console.log(currentPost);
 
-  // Sort tempCommentsArray by date from latest first to oldest last
-  tempCommentsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const postTitle = currentPost.postTitle;
+  const postTag = currentPost.postTag;
+  const postUploadImage = currentPost.postUploadImage;
+  const randomUsername = currentPost.randomUsername;
+  const randomAvatar = currentPost.randomAvatar;
+  const postLink = currentPost.postLink;
+  const postContent = currentPost.postContent;
+  const commentVisibility = currentPost.commentVisibility;
+
+  console.log(postUploadImage);
 
   // Construct the Cloudinary URL using the UID
-  const cloudinaryUrl = `https://res.cloudinary.com/dagffmxnr/image/upload/w_400,c_scale/${image}.png`;
+  const cloudinaryUrl = `https://res.cloudinary.com/dagffmxnr/image/upload/w_400,c_scale/${postUploadImage}.png`;
 
+  console.log(commentVisibility);
+
+  let matchingComments = [];
+  
+  if (commentVisibility) {
+    // Loading in comments if commentVisibility is true
+    try {
+      // Query the database for comments with postId == postObjectID
+      matchingComments = await commentsCollection.find({ postId: postObjectID }).toArray();
+
+      // Sort the updated comments array by date from latest first to oldest last
+      matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      matchingComments.forEach(comment => console.log(comment.comment));
+    } catch (error) {
+      console.error('Error querying comments:', error);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+  }
+
+  // Render the view with the updated comments array
   res.render('viewpost', {
-        postTitle: decodeURIComponent(title),
-        postId: decodeURIComponent(postObjectID),
-        randomUsername: decodeURIComponent(randomUsername),
-        randomAvatar: decodeURIComponent(randomUserAvatar),
-        postTag: decodeURIComponent(tag),
-        postUploadImage: cloudinaryUrl,
-        postLink: decodeURIComponent(link),
-        postContent: decodeURIComponent(content),
-        comments: tempCommentsArray,
-        commentVisibility: decodeURIComponent(visibility),
-        sessionUsername: username,
-        message: message,
-        commentSuccess: commentSuccess
+    postTitle: postTitle,
+    postId: postObjectID,
+    randomUsername: randomUsername,
+    randomAvatar: randomAvatar,
+    postTag: postTag,
+    postUploadImage: cloudinaryUrl,
+    postLink: postLink,
+    postContent: postContent,
+    commentVisibility: commentVisibility,
+    sessionUsername: username,
+    message: message,
+    comments: matchingComments,
+    commentSuccess: commentSuccess
   });
 });
 
 // Route to handle comment submission
 app.post("/post/comment", sessionValidation, async (req, res) => {
-  const { sessionUsername, postId, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, comment, message, commentSuccess } = req.body;
+  const { sessionUsername, postId, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comment, message, commentSuccess } = req.body;
 
   try {
     const newCommentsData = {
@@ -401,39 +431,39 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
       commenter: sessionUsername,
       comment: comment,
       createdAt: new Date(),
-    }
+    };
 
-    const insertionResult = await commentsCollection.insertOne(newCommentsData);
-    
-    console.log(`Successfully inserted document: ${insertionResult.insertedId}`);
+    const insertedComment = await commentsCollection.insertOne(newCommentsData);
+    console.log(`Successfully inserted document: ${insertedComment.insertedId}`);
 
-    console.log(commentSuccess);
+    // Query the database for comments with postId == postId
+    const matchingComments = await commentsCollection.find({ postId: postId }).toArray();
+
+    console.log(matchingComments);
+
+    // Sort the updated comments array by date from latest first to oldest last
+    matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return res.render('viewpost', {
       postTitle: postTitle,
       postId: postId,
-      //randomUsername: decodeURIComponent(randomUsername),
-      //randomAvatar: decodeURIComponent(randomUserAvatar),
       postTag: postTag,
       postUploadImage: postUploadImage,
       postLink: postLink,
       postContent: postContent,
-      comments: comments,
+      comments: matchingComments,
       commentVisibility: commentVisibility,
       sessionUsername: sessionUsername,
       message: message,
-      commentSuccess: commentSuccess
+      comments: matchingComments,
+      commentSuccess: commentSuccess,
     });
-   
-    // Redirect back to the post view with a success message
-    //return res.redirect(`/viewposts?postObjectID=${postId}&commentSuccess=true&sessionUsername=${sessionUsername}&postUploadImage=${postUploadImage}&postLink=${postLink}&postTitle=${postTitle}&commentVisibility=${commentVisibility}&comments=${comments}&message=Comment added successfully`);
-    
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 
 app.get("/journal", sessionValidation, async (req, res) => {
   res.render("journal");
@@ -484,10 +514,7 @@ app.post("/submitSignUp", async (req, res) => {
       password: hashedPassword,
       email: email, // changed to include email
       resetPasswordToken: "",
-      resetPasswordExpires: "",
-      savedDrafts: [],
-      savedPosts: [],
-      userPosts: [],
+      resetPasswordExpires: ""
     });
 
     console.log("Inserted user");
@@ -661,10 +688,7 @@ app.post("/loggingIn", async (req, res) => {
       password: 1,
       email: 1,
       resetPasswordToken: 1,
-      resetPasswordExpires: 1,
-      savedDrafts: 1,
-      savedPosts: 1,
-      userPosts: 1,
+      resetPasswordExpires: 1
     })
     .toArray();
 
@@ -690,9 +714,6 @@ app.post("/loggingIn", async (req, res) => {
     req.session.email = result[0].email;
     req.session.resetPasswordToken = result[0].resetPasswordToken;
     req.session.resetPasswordExpires = result[0].resetPasswordExpires;
-    req.session.savedDrafts = result[0].savedDrafts;
-    req.session.savedPosts = result[0].savedPosts;
-    req.session.userPosts = result[0].userPosts;
     req.session.cookie.maxAge = expireTime;
 
     res.redirect("/");
@@ -717,7 +738,17 @@ app.get("/profile", sessionValidation, async (req, res) => {
     return;
   }
 
-  const { savedDrafts, savedPosts, userPosts } = result;
+  const userSavedDrafts = await draftsCollection.find({ username }).toArray();
+
+  const userSavedPosts = await savedPostsCollection.find({ username }).toArray();
+
+  const userMadePosts = await postsCollection.find({ username }).toArray();
+
+  const savedDrafts = userSavedDrafts;
+
+  const savedPosts = userSavedPosts;
+
+  const userPosts = userMadePosts; 
 
   res.render("profile", {
     username,
@@ -737,8 +768,11 @@ app.get("/savedDrafts", sessionValidation, async (req, res) => {
     res.render("error", { message: "User not found" });
     return;
   }
-  const { savedDrafts } = result;
-  res.render("userDraftsPage", { savedDrafts });
+
+  const userSavedDrafts = await draftsCollection.find({ username }).toArray();
+  const savedDrafts = userSavedDrafts; 
+
+  res.render("userDraftsPage", { savedDrafts: savedDrafts });
 });
 
 app.get("/savedPosts", sessionValidation, async (req, res) => {
@@ -749,20 +783,26 @@ app.get("/savedPosts", sessionValidation, async (req, res) => {
     res.render("error", { message: "User not found" });
     return;
   }
-  const { savedPosts } = result;
-  res.render("userSavedPostsPage", { savedPosts });
+
+  const userSavedPosts = await savedPostsCollection.find({ username }).toArray();
+  const savedPosts = userSavedPosts; 
+
+  res.render("userSavedPostsPage", { savedPosts: savedPosts });
 });
 
 app.get("/userPosts", sessionValidation, async (req, res) => {
   const username = req.session.username;
+  const message = "Comments added successfully";
   const result = await userCollection.findOne({ username });
   if (!result) {
     res.status(404);
     res.render("error", { message: "User not found" });
     return;
   }
-  const { userPosts } = result;
-  res.render("userPostsPage", { userPosts });
+  const userMadePosts = await postsCollection.find({ username }).toArray();
+  const userPosts = userMadePosts;
+  console.log(userPosts);
+  res.render("userPostsPage", { userPosts: userPosts, username: username, message: message });
 });
 
 app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
