@@ -12,6 +12,15 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const path = require("path");
 const crypto = require("crypto");
+const {v4: uuid} = require('uuid');
+const cloudinary = require("cloudinary");
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_CLOUD_KEY,
+  api_secret: process.env.CLOUDINARY_CLOUD_SECRET
+});
+const storage = multer.memoryStorage()
+const uploadForImage = multer({ storage: storage });
 const saltRounds = 12;
 const expireTime = 24 * 60 * 60 * 1000; // session expires after a day
 
@@ -82,6 +91,26 @@ function sessionValidation(req, res, next) {
   }
 }
 
+// middleware for returning to array of all comments made by everyone
+const fetchAndSortUserComments = async (req, res, next) => {
+  try {
+    // Fetch all comments from the commentsCollection
+    const commentsArray = await commentsCollection
+      .find({}, { projection: { _id: 0 } }) // Assuming you want to exclude the MongoDB _id field
+      .toArray();
+
+    // Sort the comments based on the createdAt field
+    commentsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Make the sorted comments array available in req object
+    req.comments = commentsArray;
+    next();
+  } catch (error) {
+    console.error('Error fetching or sorting comments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 //... rest of your code
 
 // Middleware
@@ -144,8 +173,8 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   }
 
   // Retrieve query parameters
-  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postID } = req.query;
-
+  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postId } = req.query;
+  console.log(postId);
   // Decode URI components and parse comments if available
   const decodedTitle = title ? decodeURIComponent(title) : '';
   const decodedRandomUsername = randomUsername ? decodeURIComponent(randomUsername) : '';
@@ -156,7 +185,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   const decodedContent = content ? decodeURIComponent(content) : '';
   const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
   const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
-  const decodedPostID = postID ? decodeURIComponent(postID) : '';
+  const decodedPostID = postId ? decodeURIComponent(postId) : '';
 
   // define function to get random elements from an array
   function getRandomElement(array) {
@@ -182,7 +211,8 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 
   // Use the function to get random data
   getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
-  // Now you have randomUsername and randomAvatar, you can proceed with your logic
+    
+    // Now you have randomUsername and randomAvatar, you can proceed with your logic
     res.render('createPost', {
       postTitle: decodedTitle,
       randomGenUsername: randomGenUsername,
@@ -201,11 +231,11 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 
 const upload = multer();
 
-app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
+app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async function (req, res, next) {
   try {
     // Get form data from request body
-    const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true';
+    const { postTitle, randomGenUsername, randomAvatar, postTag, postLink, postContent, postId } = req.body;
+    const commentVisibility = req.body.commentVisibility === 'true' ? true : false;
     const username = req.session.username;
     const currentDate = new Date();
 
@@ -259,6 +289,9 @@ app.post("/submitPost", sessionValidation, upload.none(), async (req, res) => {
   }
 });
 
+
+// works perfectly where post will be moved to userPost folder if user submits their completed post
+// do not change anything here!
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
@@ -267,7 +300,7 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
     // Create a post object
     const post = {
-      postId: postID ? new ObjectId(postID) : new ObjectId(), // Use existing postId if provided
+      postId: postId ? new ObjectId(postId) : new ObjectId(), // Use existing postId if provided
       postTitle,
       randomGenUsername,
       randomAvatar,
@@ -281,7 +314,7 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
 
     console.log(post);
 
-    if (postID) {
+    if (postId) {
       // If postId exists, update the existing draft
       await draftsCollection.updateOne(
         { postId: new ObjectId(postId) }, // Filter for the existing postId
@@ -387,8 +420,6 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
     commentSuccess: commentSuccess
   });
 });
-
-
 
 // Route to handle comment submission
 app.post("/post/comment", sessionValidation, async (req, res) => {
@@ -752,20 +783,26 @@ app.get("/savedPosts", sessionValidation, async (req, res) => {
     res.render("error", { message: "User not found" });
     return;
   }
-  const { savedPosts } = result;
-  res.render("userSavedPostsPage", { savedPosts });
+
+  const userSavedPosts = await savedPostsCollection.find({ username }).toArray();
+  const savedPosts = userSavedPosts; 
+
+  res.render("userSavedPostsPage", { savedPosts: savedPosts });
 });
 
 app.get("/userPosts", sessionValidation, async (req, res) => {
   const username = req.session.username;
+  const message = "Comments added successfully";
   const result = await userCollection.findOne({ username });
   if (!result) {
     res.status(404);
     res.render("error", { message: "User not found" });
     return;
   }
-  const { userPosts } = result;
-  res.render("userPostsPage", { userPosts });
+  const userMadePosts = await postsCollection.find({ username }).toArray();
+  const userPosts = userMadePosts;
+  console.log(userPosts);
+  res.render("userPostsPage", { userPosts: userPosts, username: username, message: message });
 });
 
 app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
@@ -816,6 +853,10 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
 
 app.get("/viewEntries", sessionValidation, async (req, res) => {
   res.render("viewEntries");
+});
+
+app.get("/moodHistory", sessionValidation, async (req, res) => {
+  res.render("moodHistory");
 });
 
 app.listen(port, () => {
