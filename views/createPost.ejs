@@ -8,6 +8,7 @@
                 <input type="hidden" id="postId" name="postId" value="<%= postId %>">
                 <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
                 <input type="hidden" id="randomAvatar" name="randomAvatar" value="<%= randomAvatar %>">
+                <input type="hidden" id="username" name="username" value="<%= username %>">
 
                 <!-- Other form fields for post title, tag, and content -->
                 <h2 style="text-align: center;">Create a post!</h2>
@@ -39,7 +40,7 @@
 
                 <!-- Checkbox for making comments visible -->
                 <label for="makeCommentsVisible">Make Comments Visible:</label>
-                <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true" <%= commentVisibility ? 'value="true"' : '' %>>
+                <input type="checkbox" id="commentVisibility" name="commentVisibility" value="true" <%= commentVisibility ? 'value="true"' : '' %>>
                 <br>
             
                 <label for="postContent">Content:</label>
