@@ -1,41 +1,22 @@
-/* .journal-container {
-    margin-top: 110px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
-.journal-card {
-    width: 100%;
-    max-width: 200px; 
-    height: auto;
-    margin: 10px;
-}
-
-.card-img {
-    max-height: 150px; 
-    object-fit: cover;
-}
-
-.card-img-overlay {
+.journal-welcome {
+    margin-top: 250px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-} */
+}
 
 .journal-container {
     display: flex;
     justify-content: space-around;
     padding: 20px;
+    margin-top: 50px;
+    gap: 10px;
 }
 
 .nav-button {
     text-align: center;
     cursor: pointer;
 }
+
 
 .nav-icon {
     width: 100px;

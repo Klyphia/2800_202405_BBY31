@@ -466,7 +466,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 });
 
 app.get("/journal", sessionValidation, async (req, res) => {
-  res.render("journal");
+  res.render("journal", {username: req.session.username});
 });
 
 app.get("/userpage", (req, res) => {

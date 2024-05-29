@@ -1,40 +1,17 @@
 <%- include('templates/header.ejs') %>
-<!-- <div class="journal-container">
-    <div class="col-sm-6 p-4">
-        <div class="card bg-dark text-white journal-card" style="height: auto" id="newEntryCard">
-            <img src="/images/new_entry.jpg" class="card-img" alt="...">
-            <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
-                <h5 class="card-title text-center">Write a new entry</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 p-4">
-        <div class="card bg-dark text-white journal-card" style="height: auto" id="viewEntriesCard">
-            <img src="/images/book 2.png" class="card-img" alt="...">
-            <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
-                <h5 class="card-title text-center">View your entries</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 p-4">
-        <div class="card bg-dark text-white journal-card" style="height: auto" id="moodHistory">
-            <img src="/images/mood_history.jpg" class="card-img" alt="...">
-            <div class="card-img-overlay" style="display: flex; justify-content: center; align-items: center;">
-                <h5 class="card-title text-center">View mood history</h5>
-            </div>
-        </div>
-    </div>
-</div> -->
+<div class="journal-welcome">
+    <h3>Welcome to your journal page, <%= username %>!</h3>
+</div>
 <div class="journal-container d-flex justify-content-around">
-    <div class="nav-button" id="newEntryButton">
+    <div class="nav-button journal-button" id="newEntryButton">
         <img src="/images/new_entry_icon.png" alt="New Entry" class="nav-icon">
         <p>Write a new entry</p>
     </div>
-    <div class="nav-button" id="viewEntriesButton">
+    <div class="nav-button journal-button" id="viewEntriesButton">
         <img src="/images/view_entries_icon.png" alt="View Entries" class="nav-icon">
         <p>View your entries</p>
     </div>
-    <div class="nav-button" id="moodHistoryButton">
+    <div class="nav-button journal-button" id="moodHistoryButton">
         <img src="/images/mood_history_icon.png" alt="Mood History" class="nav-icon">
         <p>View mood history</p>
     </div>
