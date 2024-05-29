@@ -835,6 +835,22 @@ app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
   }
 });
 
+app.get('/getMoodData', sessionValidation, async (req, res) => {
+  const userId = req.session.userid;
+  try {
+    const userMoodData = await moodHistory.findOne({ userId: userId });
+    if (userMoodData) {
+      res.json(userMoodData.mood);
+      console.log(userMoodData.mood);
+    } else {
+      res.json([]);
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 app.get('/getJournalEntries', sessionValidation, async (req, res) => {
   const userId = req.session.userid;
   console.log(userId);
