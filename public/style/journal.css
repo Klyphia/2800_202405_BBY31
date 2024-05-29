@@ -1,4 +1,4 @@
-.journal-container {
+/* .journal-container {
     margin-top: 110px;
     display: flex;
     flex-wrap: wrap;
@@ -9,13 +9,13 @@
 
 .journal-card {
     width: 100%;
-    max-width: 200px; /* Adjust the size as needed */
+    max-width: 200px; 
     height: auto;
     margin: 10px;
 }
 
 .card-img {
-    max-height: 150px; /* Adjust the image size as needed */
+    max-height: 150px; 
     object-fit: cover;
 }
 
@@ -24,6 +24,23 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+} */
+
+.journal-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.nav-button {
+    text-align: center;
+    cursor: pointer;
+}
+
+.nav-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
 }
 
 .modal-body textarea {

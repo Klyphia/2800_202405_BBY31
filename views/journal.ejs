@@ -1,5 +1,5 @@
 <%- include('templates/header.ejs') %>
-<div class="journal-container">
+<!-- <div class="journal-container">
     <div class="col-sm-6 p-4">
         <div class="card bg-dark text-white journal-card" style="height: auto" id="newEntryCard">
             <img src="/images/new_entry.jpg" class="card-img" alt="...">
@@ -23,6 +23,20 @@
                 <h5 class="card-title text-center">View mood history</h5>
             </div>
         </div>
+    </div>
+</div> -->
+<div class="journal-container d-flex justify-content-around">
+    <div class="nav-button" id="newEntryButton">
+        <img src="/images/new_entry_icon.png" alt="New Entry" class="nav-icon">
+        <p>Write a new entry</p>
+    </div>
+    <div class="nav-button" id="viewEntriesButton">
+        <img src="/images/view_entries_icon.png" alt="View Entries" class="nav-icon">
+        <p>View your entries</p>
+    </div>
+    <div class="nav-button" id="moodHistoryButton">
+        <img src="/images/mood_history_icon.png" alt="Mood History" class="nav-icon">
+        <p>View mood history</p>
     </div>
 </div>
 
@@ -50,9 +64,9 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const newEntryCard = document.getElementById('newEntryCard');
-        const viewEntriesCard = document.getElementById('viewEntriesCard');
-        const moodHistory = document.getElementById('moodHistory');
+        const newEntryCard = document.getElementById('newEntryButton');
+        const viewEntriesCard = document.getElementById('viewEntriesButton');
+        const moodHistory = document.getElementById('moodHistoryButton');
         const journalModal = new bootstrap.Modal(document.getElementById('journalModal'));
         const currentDateSpan = document.getElementById('currentDate');
         const journalText = document.getElementById('journalText');
