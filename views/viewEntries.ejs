@@ -1,4 +1,12 @@
 <%- include('templates/header.ejs') %>
+    <div class="back-button">
+        <a href="/journal">
+            <img class="back-image" src="/images/back.png">
+        </a>
+    </div>
+    <div class="entries-welcome">
+        <h2 style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif"><%= username %>'s Journal Entries</h2>
+    </div>
     <div class="view-entries-container">
         <div class="viewEntriesRow" id="entriesContainer">
             <!-- Journal entries will be appended here dynamically -->
@@ -11,6 +19,9 @@
                 .then(response => response.json())
                 .then(entries => {
                     console.log(entries);
+
+                    entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
                     const entriesContainer = document.getElementById('entriesContainer');
                     if (entries.length === 0) {
                         const noEntriesMessage = document.createElement('p');

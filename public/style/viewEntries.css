@@ -1,5 +1,29 @@
+.back-button {
+    display: inline-block; /* Ensure the button doesn't take up too much space */
+    margin: 10px; /* Adjust margin as needed */
+    margin-top: 150px;
+}
+
+.back-button a {
+    display: inline-block; 
+}
+
+.back-image{
+    width: 40px;
+    height: auto;
+    transition: transform 0.2s; 
+}
+
+.back-image:hover {
+    transform: scale(1.1); /* Optional: Slightly enlarge the button on hover */
+}
+
+.entries-welcome {
+    display: flex;
+    justify-content: center;
+}
 .view-entries-container {
-    margin-top: 20vh;
+    margin-bottom: 75px;
 }
 
 .col-lg-10 {
@@ -10,5 +34,5 @@
 .entries-card {
     background-color: #a3f7b5;
     width: 100%;
-    max-width: 250px;
+    max-width: 320px;
 }

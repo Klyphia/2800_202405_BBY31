@@ -868,7 +868,7 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
 });
 
 app.get("/viewEntries", sessionValidation, async (req, res) => {
-  res.render("viewEntries");
+  res.render("viewEntries", {username: req.session.username});
 });
 
 app.get("/moodHistory", sessionValidation, async (req, res) => {
