@@ -173,60 +173,46 @@ app.get("/createPost", sessionValidation, async (req, res) => {
   }
 
   // Retrieve query parameters
-  const { title, randomUsername, randomAvatar, tag, image, link, content, comments, visibility, postId } = req.query;
-  console.log(postId);
+  const { postObjectID, message } = req.query;
+  //console.log(postObjectID);
   // Decode URI components and parse comments if available
-  const decodedTitle = title ? decodeURIComponent(title) : '';
-  const decodedRandomUsername = randomUsername ? decodeURIComponent(randomUsername) : '';
-  const decodedRandomAvatar = randomAvatar ? decodeURIComponent(randomAvatar) : '';
-  const decodedTag = tag ? decodeURIComponent(tag) : '';
-  const decodedImage = image ? decodeURIComponent(image) : '';
-  const decodedLink = link ? decodeURIComponent(link) : '';
-  const decodedContent = content ? decodeURIComponent(content) : '';
-  const parsedComments = comments ? JSON.parse(decodeURIComponent(comments)) : [];
-  const decodedVisibility = visibility ? decodeURIComponent(visibility) : '';
-  const decodedPostID = postId ? decodeURIComponent(postId) : '';
+  const decodedMessage = message ? decodeURIComponent(message) : '';
+  const decodedPostID = postObjectID ? decodeURIComponent(postObjectID) : '';
+  //console.log(decodedPostID);
+  const postId = new ObjectId(decodedPostID); 
+  console.log(postId);
+  const currentDraft = await draftsCollection.findOne( {postId: new ObjectId(postId)} ); 
+  console.log(currentDraft);
 
-  // define function to get random elements from an array
-  function getRandomElement(array) {
-    return array[Math.floor(Math.random() * array.length)];
+  if (!currentDraft) {
+    res.status(404);
+    res.render("error", {message: "Draft not found"});
   }
 
-  async function getRandomData(username, avatar) {
-    try {
-      const randomData = await randomCollection.findOne({});
-      if (!randomData) {
-        throw new Error('No random data found');
-      }
 
-      const randomGenUsername = username || getRandomElement(randomData.name.animal) + getRandomElement(randomData.name.color);
-      const randomAvatar = avatar || getRandomElement(randomData.avatar_array);
-
-      return { randomGenUsername, randomAvatar };
-    } catch (error) {
-      console.error(`Failed to retrieve random data ${error}`);
-      return { randomGenUsername: '', randomAvatar:'' };
-    }
-  }
-
-  // Use the function to get random data
-  getRandomData(decodedRandomUsername, decodedRandomAvatar).then(({ randomGenUsername, randomAvatar }) => {
     
     // Now you have randomUsername and randomAvatar, you can proceed with your logic
     res.render('createPost', {
-      postTitle: decodedTitle,
-      randomGenUsername: randomGenUsername,
-      randomAvatar: randomAvatar,
-      postTag: decodedTag,
-      postUploadImage: decodedImage,
-      postLink: decodedLink,
-      postContent: decodedContent,
-      comments: parsedComments,
-      commentVisibility: decodedVisibility,
-      postId: decodedPostID,
-      username: username
+      postTitle: currentDraft.postTitle,
+      randomGenUsername: " ",
+      randomAvatar: " ",
+      postTag: currentDraft.postTag,
+      postUploadImage: currentDraft.postUploadImage,
+      postLink: currentDraft.postLink,
+      postContent: currentDraft.postContent,
+      commentVisibility: currentDraft.commentVisibility,
+      postId: currentDraft.postId,
+      username: currentDraft.username
     });
-  });
+
+    const draftRemovalStatus = await draftsCollection.deleteOne({ postId: new ObjectId(postId) });
+
+    if (draftRemovalStatus) {
+      console.log("Successfully removed draft after submission!");
+    } else {
+      console.log("Failed to remove draft!");
+    }
+  
 });
 
 const upload = multer();
@@ -238,6 +224,7 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
     const commentVisibility = req.body.commentVisibility === 'true' ? true : false;
     const username = req.session.username;
     const currentDate = new Date();
+    const invalidPosting = "Your Title, Tag, or Content is missing."
 
     console.log(username);
     console.log(commentVisibility);
@@ -806,6 +793,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
 
 app.get("/savedDrafts", sessionValidation, async (req, res) => {
   const username = req.session.username;
+  const message = "Comments added successfully";
   const result = await userCollection.findOne({ username });
   if (!result) {
     res.status(404);
@@ -816,7 +804,7 @@ app.get("/savedDrafts", sessionValidation, async (req, res) => {
   const userSavedDrafts = await draftsCollection.find({ username }).toArray();
   const savedDrafts = userSavedDrafts; 
 
-  res.render("userDraftsPage", { savedDrafts: savedDrafts });
+  res.render("userDraftsPage", { savedDrafts: savedDrafts, username: username, message: message });
 });
 
 app.get("/savedPosts", sessionValidation, async (req, res) => {
