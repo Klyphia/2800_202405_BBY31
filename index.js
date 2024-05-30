@@ -983,7 +983,7 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
   try {
     const user = await moodHistory.findOne({ userId: userId });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return;
     }
     const entries = user.entries || []; // If 'entries' field does not exist, default to an empty array
     res.json(entries);
