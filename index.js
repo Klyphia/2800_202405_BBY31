@@ -294,11 +294,16 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
 
     console.log(post);
     
-    res.status(200).json({ message: "submit post operation was successful" });
+    res.render('postConfirmation');
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
+});
+
+
+app.get("/postConfirmation", sessionValidation, async (req, res) => {
+  res.render("postConfirmation");
 });
 
 
