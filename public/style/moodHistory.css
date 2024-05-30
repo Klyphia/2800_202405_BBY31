@@ -54,6 +54,28 @@
     margin: 12px;
 }
 
+.current-day {
+    position: relative;
+}
+
+.current-day .mood-date-text {
+    position: relative;
+    z-index: 1; /* Ensure the number is above the circle */
+}
+
+.current-day .circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px; /* Adjust the size of the circle */
+    height: 30px; /* Adjust the size of the circle */
+    border-radius: 50%;
+    background-color: #F8A4A7; /* Example: Yellow background for circle */
+    z-index: 0; /* Ensure the circle is below the number */
+}
+
+
 @media (max-width: 768px) {
     .calendar-header {
         font-size: 0.8rem;
