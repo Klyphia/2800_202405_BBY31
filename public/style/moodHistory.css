@@ -1,12 +1,14 @@
-#calendar-container {
-
+.calendar-welcome {
+    display: flex;
+    justify-content: center;
 }
 
 .calendar {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
-    border: 1px solid #ddd;
+    margin-top: 15px;
+    border: 1px solid #292929;
     overflow: hidden;
 }
 
@@ -17,7 +19,7 @@
 
 .calendar-header {
     background-color: #f5f5f5;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #292929;
     padding: 10px;
     text-align: center;
     font-size: 0.9rem;
@@ -32,7 +34,7 @@
 
 .calendar-days .day {
     width: calc(100% / 7); /* 100% / 7 days */
-    border: 1px solid #ddd;
+    border: 1px solid #292929;
     box-sizing: border-box;
     padding: 5px;
     text-align: center;
@@ -42,6 +44,14 @@
 .calendar-days .day .mood {
     margin-top: 10px;
     display: block;
+}
+
+.mood-date-text {
+    font-size: 1.2em; /* Adjust the font size as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px;
 }
 
 @media (max-width: 768px) {

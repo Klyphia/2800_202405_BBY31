@@ -872,7 +872,7 @@ app.get("/viewEntries", sessionValidation, async (req, res) => {
 });
 
 app.get("/moodHistory", sessionValidation, async (req, res) => {
-  res.render("moodHistory");
+  res.render("moodHistory", {username: req.session.username});
 });
 
 app.listen(port, () => {
