@@ -1,6 +1,6 @@
 <%- include('templates/header.ejs') %>
     <div class="back-button">
-        <img id="back-button"class="back-image" src="/images/back.png">
+        <img id="back-button" class="back-image" src="/images/back.png">
     </div>
     <div class="entries-welcome">
         <h2
@@ -12,6 +12,11 @@
         <div class="viewEntriesRow" id="entriesContainer">
             <!-- Journal entries will be appended here dynamically -->
         </div>
+    </div>
+
+    <div id="editAlertBanner" class="alert alert-success alert-dismissible fade" role="alert">
+        <span id="alertMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <div class="modal fade" id="editJournalModal" tabindex="-1" role="dialog" aria-labelledby="editJournalModalLabel"
@@ -99,6 +104,21 @@
             }
         });
 
+        function showAlert(message, type = 'success', overModal) {
+            const alertContainer = document.createElement('div');
+            alertContainer.classList.add('editAlert', 'alert', `alert-${type}`);
+            alertContainer.textContent = message;
+            document.body.appendChild(alertContainer);
+
+            if (overModal) {
+                alertContainer.style.zIndex = '3050'; // Ensure the alert appears over the modal
+            }
+
+            setTimeout(() => {
+                alertContainer.remove();
+            }, 3000); // Remove the alert after 5 seconds
+        }
+
         const editModal = new bootstrap.Modal(document.getElementById('editJournalModal'));
         const editEntryText = document.getElementById('editJournalText');
         const saveEditBtn = document.getElementById('saveEditBtn');
@@ -153,35 +173,43 @@
 
         saveEditBtn.addEventListener('click', function () {
             if (currentEditEntry) {
-                fetch('/updateJournalEntry', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        timestamp: currentEditEntry.timestamp,
-                        entry: editEntryText.value
+                if (editEntryText.value === currentEditEntry.entry) {
+                    // If entry has not been modified, simply hide the modal
+                    editModal.hide();
+                } else {
+                    fetch('/updateJournalEntry', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            timestamp: currentEditEntry.timestamp,
+                            entry: editEntryText.value
+                        })
                     })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            currentEditEntry.entry = editEntryText.value;
-                            entriesContainer.innerHTML = '';
-                            document.dispatchEvent(new Event('DOMContentLoaded'));
-                            editModal.hide();
-                        } else {
-                            console.error('Error updating journal entry:', data.message);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error updating journal entry:', err);
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                currentEditEntry.entry = editEntryText.value;
+                                entriesContainer.innerHTML = '';
+                                document.dispatchEvent(new Event('DOMContentLoaded'));
+                                editModal.hide();
+                                showAlert('Changes saved successfully', 'success', false);
+                            } else {
+                                console.error('Error updating journal entry:', data.message);
+                                showAlert('Error saving changes.', 'danger', false);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error updating journal entry:', err);
+                            showAlert('Error saving 1changes.', 'danger', false);
+                        });
+                }
             }
         });
 
         const backButton = document.getElementById("back-button");
-        backButton.addEventListener('click', function(){
+        backButton.addEventListener('click', function () {
             window.history.back();
         });
     </script>
