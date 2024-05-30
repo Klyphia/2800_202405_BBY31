@@ -354,7 +354,9 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
     // Convert postObjectID to ObjectId if necessary
     const postIdObj = new ObjectId(postObjectID);
     
+    // current post object
     currentPost = await postsCollection.findOne({ postId: postIdObj });
+
   } catch (error) {
     console.error('Error converting postObjectID to ObjectId or querying the database:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -376,6 +378,7 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   const postLink = currentPost.postLink;
   const postContent = currentPost.postContent;
   const commentVisibility = currentPost.commentVisibility;
+  const postUsername = currentPost.username;
 
   console.log(postUploadImage);
 
@@ -387,6 +390,21 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   let matchingComments = [];
   
   if (commentVisibility) {
+    // Loading in comments if commentVisibility is true
+    try {
+      // Query the database for comments with postId == postObjectID
+      matchingComments = await commentsCollection.find({ postId: postObjectID }).toArray();
+
+      // Sort the updated comments array by date from latest first to oldest last
+      matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      matchingComments.forEach(comment => console.log(comment.comment));
+    } catch (error) {
+      console.error('Error querying comments:', error);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+  } else if (postUsername === username) {
     // Loading in comments if commentVisibility is true
     try {
       // Query the database for comments with postId == postObjectID
@@ -417,7 +435,8 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
     sessionUsername: username,
     message: message,
     comments: matchingComments,
-    commentSuccess: commentSuccess
+    commentSuccess: commentSuccess,
+    postUsername: postUsername
   });
 });
 
@@ -436,13 +455,32 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
     const insertedComment = await commentsCollection.insertOne(newCommentsData);
     console.log(`Successfully inserted document: ${insertedComment.insertedId}`);
 
-    // Query the database for comments with postId == postId
-    const matchingComments = await commentsCollection.find({ postId: postId }).toArray();
+    let currentPost;
+    let matchingComments = [];
 
-    console.log(matchingComments);
+    currentPost = await postsCollection.findOne({ postId: new ObjectId(postId) });
 
-    // Sort the updated comments array by date from latest first to oldest last
-    matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const postUsername = currentPost.username;
+
+    console.log(postUsername);
+
+    if (commentVisibility) {
+      // Query the database for comments with postId == postId
+      matchingComments = await commentsCollection.find({ postId: postId }).toArray();
+
+      console.log(matchingComments);
+
+      // Sort the updated comments array by date from latest first to oldest last
+      matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sessionUsername === postUsername) {
+      // Query the database for comments with postId == postId
+      matchingComments = await commentsCollection.find({ postId: postId }).toArray();
+
+      console.log(matchingComments);
+
+      // Sort the updated comments array by date from latest first to oldest last
+      matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } 
 
     return res.render('viewpost', {
       postTitle: postTitle,
@@ -457,6 +495,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
       message: message,
       comments: matchingComments,
       commentSuccess: commentSuccess,
+      postUsername: postUsername
     });
 
   } catch (error) {

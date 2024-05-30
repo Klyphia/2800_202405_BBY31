@@ -51,6 +51,7 @@
                           <input type="hidden" name="commentVisibility" value="<%= commentVisibility %>">
                           <input type="hidden" name="comments" value="<%= comments %>">
                           <input type="hidden" name="message" value="<%= message %>">
+                          <input type="hidden" name="postUsername" value="<%= postUsername %>">
                           <!-- End of hidden input fields -->
 
                           <!-- Hidden success message element -->
@@ -73,25 +74,25 @@
                 </div>
             </div>
         </div>
-        
         <!-- Comments Section -->
-        <% if (commentVisibility) { %>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-body" style="background-color: #A3F7B5; color: #000000; font-family: 'Times New Roman', Times, serif; border-color: #000000;">
-                            <h2 class="card-title">Comments</h2>
-                            <% comments.forEach(comment => { %>
-                                <div class="comment mb-3">
-                                    <p><strong><%= comment.commenter %>:</strong> <%= comment.comment %></p>
-                                    <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
-                                </div>
-                            <% }); %>
-                        </div>
+        <% if (commentVisibility || postUsername.toLowerCase() === sessionUsername.toLowerCase()) { %>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body" style="background-color: #A3F7B5; color: #000000; font-family: 'Times New Roman', Times, serif; border-color: #000000;">
+                  <h2 class="card-title">Comments</h2>
+                  <% comments.forEach(comment => { %>
+                    <div class="comment mb-3">
+                      <p><strong><%= comment.commenter %>:</strong> <%= comment.comment %></p>
+                      <p><em><%= new Date(comment.createdAt).toLocaleString() %></em></p>
                     </div>
+                  <% }); %>
                 </div>
+              </div>
             </div>
+          </div>
         <% } %>
+      </div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->
