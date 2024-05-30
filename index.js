@@ -442,7 +442,7 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
 
 // Route to handle comment submission
 app.post("/post/comment", sessionValidation, async (req, res) => {
-  const { sessionUsername, postId, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comment, message, commentSuccess } = req.body;
+  let { sessionUsername, postId, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comment, message, commentSuccess } = req.body;
 
   try {
     const newCommentsData = {
@@ -464,11 +464,12 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 
     console.log(postUsername);
 
+    commentVisibility = req.body.commentVisibility === 'true';
+    console.log(commentVisibility);
+
     if (commentVisibility) {
       // Query the database for comments with postId == postId
       matchingComments = await commentsCollection.find({ postId: postId }).toArray();
-
-      console.log(matchingComments);
 
       // Sort the updated comments array by date from latest first to oldest last
       matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -476,11 +477,15 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
       // Query the database for comments with postId == postId
       matchingComments = await commentsCollection.find({ postId: postId }).toArray();
 
-      console.log(matchingComments);
-
       // Sort the updated comments array by date from latest first to oldest last
       matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } 
+
+    // Usage
+    //console.log(stringEquals(sessionUsername, postUsername)); 
+    console.log(commentVisibility);
+
+    console.log(matchingComments);
 
     return res.render('viewpost', {
       postTitle: postTitle,
