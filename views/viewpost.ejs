@@ -1,6 +1,6 @@
 <%- include('templates/header.ejs') %>
 
-<body class="d-flex justify-content-center align-items-center vh-100">
+<body>
     <div class="container mt-custom" id="viewPostSection">
         <div class="row">
             <!-- Post Details -->
@@ -60,7 +60,7 @@
                           <% } %>
                           
                           <div class="form-group">
-                            <label for="comment">Compasionetter: <%= sessionUsername %></label>
+                            <label for="comment">Comment as: <%= sessionUsername %></label>
                             <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
                           </div>
                           
