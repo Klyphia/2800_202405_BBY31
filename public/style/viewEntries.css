@@ -4,10 +4,6 @@
     margin-top: 150px;
 }
 
-.back-button a {
-    display: inline-block; 
-}
-
 .back-image{
     width: 40px;
     height: auto;
@@ -35,4 +31,16 @@
     background-color: #a3f7b5;
     width: 100%;
     max-width: 320px;
+}
+
+.edit-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.noEntriesMsg {
+    display: flex;
+    justify-content: center;
 }
