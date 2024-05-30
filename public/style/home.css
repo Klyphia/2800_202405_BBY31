@@ -79,6 +79,8 @@
   border-radius:15px;
   margin: 5px;
   padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 /* Add some hover effects to buttons */
@@ -97,7 +99,8 @@
   border-radius:15px; 
   margin: 5px;
   padding: 5px;
-
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 #moodButton {
