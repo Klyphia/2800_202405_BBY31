@@ -1,8 +1,7 @@
 <%- include('templates/header.ejs') %>
-    <div class="container d-flex h-100 justify-content-center align-items-center">
+    <div class="container d-flex h-100 justify-content-center align-items-center" style="margin-top: 75px;">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8 col-sm-10" style="margin-top: 20vh;">
-                <h1 class="text-center">Login</h1>
                 <form action="/loggingIn" method="post" class="p-3 border rounded shadow">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username:</label>
@@ -13,7 +12,7 @@
                         <input type="password" id="password" name="password" class="form-control" required>
                     </div>
                     <div class="d-grid gap-2">
-                        <input type="submit" value="Login" class="btn btn-primary">
+                        <input type="submit" value="Login" class="btn btn-primary" style="background-color: #6eba4d; border-color: #487b32;">
                     </div>
                 </form>
                 <div class="text-center mt-3">

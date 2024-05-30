@@ -7,7 +7,7 @@
 
     <body>
         <!-- A button to open the popup form -->
-        <button class="open-button" onclick="openForm()">Open Form</button>
+        <button class="open-button" onclick="openForm()">Daily Mood Tracker</button>
 
         <!-- The form -->
         <div class="form-popup" id="myForm">
@@ -15,6 +15,7 @@
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
                     <button id="moodButtons" type="button" class="redButton"
+<<<<<<< HEAD
                         onclick="submitValue('#ff0000'); closeForm(); ">1</button>
                     <button id="moodButtons" type="button" class="orangeButton"
                         onclick="submitValue('#ffa500'); closeForm(); ">2</button>
@@ -22,6 +23,15 @@
                         onclick="submitValue('#dede0c'); closeForm(); ">3</button>
                     <button id="moodButtons" type="button" class="lightGreenButton"
                         onclick="submitValue('#90ee90'); closeForm(); ">4</button>
+=======
+                        onclick="submitValue('#ff0000'); closeForm();"></button>
+                    <button id="moodButtons" type="button" class="orangeButton"
+                        onclick=" submitValue('#ffa500'); closeForm();"></button>
+                    <button id="moodButtons" type="button" class="yellowButton"
+                        onclick="submitValue('#dede0c'); closeForm();"></button>
+                    <button id="moodButtons" type="button" class="lightGreenButton"
+                        onclick="submitValue('#90ee90'); closeForm();"></button>
+>>>>>>> 87caae3f2345b29b7271146bb7a479a7e9f1aa5b
                     <button id="moodButtons" type="button" class="greenButton"
                         onclick="submitValue('#00e000'); closeForm();">5</button>
                 </div>
@@ -44,7 +54,6 @@
         </div>
 
         <section class="grid-container pb-5" style="position: relative;">
-            <!-- Add pb-5 class for padding at the bottom -->
             <p id="quote" style="text-align: center;"></p>
             <p id="author" style="padding: auto; text-align: center;"></p>
             <h2 class="text-center">Recent Posts</h2>
@@ -53,7 +62,6 @@
                 <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
                 <select id="postTagFilter">
                     <option value="all">All</option>
-                            <!-- Loop through uniqueTags and create an option for each tag -->
                     <% 
                         // Extract unique postTags
                         const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
@@ -63,23 +71,25 @@
                     <% }); %>
                 </select>
             </div> 
-
-        <div class="row" id="postsContainer">
-            <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <input type="hidden" name="username" value="<%= username %>">
-                    <input type="hidden" name="message" value="<%= message %>">
-                    <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= post.postTitle %></h5>
-                                <p class="card-text"><%= post.postTag %></p>
+        
+            <div class="row" id="postsContainer">
+                <% storyPosts.forEach(function(post) { %>
+                    <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
+                        <input type="hidden" name="username" value="<%= username %>">
+                        <input type="hidden" name="message" value="<%= message %>">
+                        <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
+                            <div class="card shadow" style="background-color: #a3f7b5; margin-left: 3px; margin-right: 3px; box-shadow: 2px;" >
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= post.postTitle %></h5>
+                                    <p class="card-text"><%= post.postTag %></p>
+                                </div>
                             </div>
                         </a>
                     </div>
-                    <% }); %>
+                <% }); %>
             </div>
         </section>
+        
         <script>
 
             function submitValue(value) {
@@ -139,19 +149,24 @@
         <script>
 
             // Tag filter
-            document.getElementById('postTagFilter').addEventListener('change', function () {
-                const selectedTag = this.value;
-                const posts = document.querySelectorAll('.post-card');
+            document.addEventListener('DOMContentLoaded', function() {
+    const postTagFilter = document.getElementById('postTagFilter');
+    const postsContainer = document.getElementById('postsContainer');
+    const posts = postsContainer.getElementsByClassName('post-card');
 
-                posts.forEach(post => {
-                    const postTag = post.getAttribute('data-post-tag');
-                    if (selectedTag === 'all' || postTag === selectedTag) {
-                        post.style.display = 'block';
-                    } else {
-                        post.style.display = 'none';
-                    }
-                });
-            });
+    postTagFilter.addEventListener('change', function() {
+        const selectedTag = this.value;
+        Array.from(posts).forEach(function(post) {
+            const postTag = post.getAttribute('data-post-tag');
+            if (selectedTag === 'all' || postTag === selectedTag) {
+                post.style.display = 'block';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    });
+});
+
         </script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>

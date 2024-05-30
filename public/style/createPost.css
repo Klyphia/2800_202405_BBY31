@@ -1,8 +1,8 @@
 
 *{
-    font-family: 'Times New Roman', Times, serif;
+    
     font-weight: bold;
-    overflow-x: hidden; 
+    
 }
 .postformbody{
     background-color: red;
@@ -15,6 +15,7 @@
     align-items: center; /* Centers items vertically */
     min-height: 80vh; /* Ensures container takes full viewport height */
 }
+
 body {
     background-color: #E5F9E0;
 }
