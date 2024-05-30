@@ -510,7 +510,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 });
 
 app.get("/journal", sessionValidation, async (req, res) => {
-  res.render("journal");
+  res.render("journal", {username: req.session.username});
 });
 
 app.get("/userpage", (req, res) => {
@@ -853,7 +853,8 @@ app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
   try {
     const userId = req.session.userid;
     const { entry } = req.body; // Assuming these are the fields in your journal entry
-    const timestamp = new Date();
+    const timestamp = Date.now();
+    console.log(timestamp);
 
     // Check if there's already a document in mood_history with the user ID
     let userMoodHistory = await moodHistory.findOne({ userId: userId });
@@ -911,13 +912,69 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
   }
 });
 
+app.post('/updateJournalEntry', sessionValidation, async (req, res) => {
+  try {
+      const userId = req.session.userid;
+      const { timestamp, entry } = req.body;
+
+      // Update the specific entry in the database
+      const result = await moodHistory.updateOne(
+          { userId: userId, 'entries.timestamp': timestamp },
+          { $set: { 'entries.$.entry': entry } }
+      );
+
+      if (result.modifiedCount > 0) {
+          res.json({ success: true });
+      } else {
+          res.json({ success: false, message: 'No entry found to update' });
+      }
+  } catch (error) {
+      console.error('Error updating journal entry:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 app.get("/viewEntries", sessionValidation, async (req, res) => {
-  res.render("viewEntries");
+  res.render("viewEntries", {username: req.session.username});
 });
 
 app.get("/moodHistory", sessionValidation, async (req, res) => {
-  res.render("moodHistory");
+  res.render("moodHistory", {username: req.session.username});
 });
+
+app.post("/saveMood", sessionValidation, async (req, res) =>{
+  try {
+    const userId = req.session.userid;
+    const { colour } = req.body; 
+    console.log(colour);
+    const timestamp = new Date();
+
+    let userMoodHistory = await moodHistory.findOne({ userId: userId });
+
+    if (userMoodHistory) {
+      await moodHistory.updateOne(
+        { userId: userId },
+        { $push: { mood: { colour, timestamp } } }
+      );
+    } else {
+      await moodHistory.insertOne({
+        userId: userId,
+        mood: [{ colour, timestamp }],
+      });
+    }
+
+    res.status(200).json({ message: "Mood saved successfully" });
+  } catch (error) {
+    console.error("Error saving mood:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }    
+});
+
+app.use("/*", (req, res) => {
+  res.status(404);
+  res.render('404');
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
