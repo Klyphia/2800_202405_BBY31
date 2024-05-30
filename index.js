@@ -868,6 +868,28 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
   }
 });
 
+app.post('/updateJournalEntry', sessionValidation, async (req, res) => {
+  try {
+      const userId = req.session.userid;
+      const { timestamp, entry } = req.body;
+
+      // Update the specific entry in the database
+      const result = await moodHistory.updateOne(
+          { userId: userId, 'entries.timestamp': timestamp },
+          { $set: { 'entries.$.entry': entry } }
+      );
+
+      if (result.modifiedCount > 0) {
+          res.json({ success: true });
+      } else {
+          res.json({ success: false, message: 'No entry found to update' });
+      }
+  } catch (error) {
+      console.error('Error updating journal entry:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 app.get("/viewEntries", sessionValidation, async (req, res) => {
   res.render("viewEntries", {username: req.session.username});
 });
