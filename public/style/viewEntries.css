@@ -43,3 +43,8 @@
     right: 10px;
     cursor: pointer;
 }
+
+#entriesContainer {
+    display: flex;
+    justify-content: center;
+}

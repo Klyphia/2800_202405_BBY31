@@ -809,7 +809,7 @@ app.post("/saveJournalEntry", sessionValidation, async (req, res) => {
   try {
     const userId = req.session.userid;
     const { entry } = req.body; // Assuming these are the fields in your journal entry
-    const timestamp = Date.now() - (7 * 60 * 60 * 1000);
+    const timestamp = Date.now();
     console.log(timestamp);
 
     // Check if there's already a document in mood_history with the user ID
