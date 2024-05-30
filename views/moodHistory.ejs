@@ -60,6 +60,15 @@
                     circle.classList.add('circle');
                     dayElement.appendChild(circle);
                 }
+
+                dayElement.addEventListener('click', function () {
+                    const selectedDate = new Date(currentYear, currentMonth, i);
+                    const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
+                    // Redirect to viewEntries page with selected date as query parameter
+                    window.location.href = `/viewEntries?date=${formattedDate}`;
+                });
+                
                 calendarDaysContainer.appendChild(dayElement);
             }
 
