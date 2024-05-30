@@ -29,3 +29,7 @@
     height: 200px;
     resize: none;
 }
+
+#alertBanner {
+    margin-top: 190px;
+}

@@ -1,5 +1,5 @@
 .modal-close{
-    background-color: darkred;
+    background-color: rgb(212, 50, 50);
 }
 
 .modal-content {
@@ -12,4 +12,5 @@
 
 .modal-save {
     background-color: #37944b8e;
+    border-color: #1e51298e;
 }

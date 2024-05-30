@@ -8,3 +8,9 @@
 .grid-row {
     margin-bottom: 20px;
 }
+
+.signout-button {
+    color: black;
+    background-color: #40c9a2;
+    border-color: #236c57; 
+}
