@@ -875,6 +875,36 @@ app.get("/moodHistory", sessionValidation, async (req, res) => {
   res.render("moodHistory", {username: req.session.username});
 });
 
+app.post("/saveMood", sessionValidation, async (req, res) =>{
+  try {
+    const userId = req.session.userid;
+    const { colour } = req.body; 
+    console.log(colour);
+    const timestamp = new Date();
+
+    let userMoodHistory = await moodHistory.findOne({ userId: userId });
+
+    if (userMoodHistory) {
+      await moodHistory.updateOne(
+        { userId: userId },
+        { $push: { mood: { colour, timestamp } } }
+      );
+    } else {
+      await moodHistory.insertOne({
+        userId: userId,
+        mood: [{ colour, timestamp }],
+      });
+    }
+
+    res.status(200).json({ message: "Mood saved successfully" });
+  } catch (error) {
+    console.error("Error saving mood:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+
+  
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });

@@ -13,11 +13,16 @@
             <form class="form-container" id="formGrid">
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
-                    <button id="moodButtons" class="redButton" onclick="closeForm()"></button>
-                    <button id="moodButtons" class="orangeButton" onclick="closeForm()"></button>
-                    <button id="moodButtons" class="yellowButton" onclick="closeForm()"></button>
-                    <button id="moodButtons" class="lightGreenButton" onclick="closeForm()"></button>
-                    <button id="moodButtons" class="greenButton" onclick="closeForm()"></button>
+                    <button id="moodButtons" type="button" class="redButton"
+                        onclick="submitValue('#ff0000');"></button>
+                    <button id="moodButtons" type="button" class="orangeButton"
+                        onclick="closeForm(); submitValue('#ffa500');"></button>
+                    <button id="moodButtons" type="button" class="yellowButton"
+                        onclick="closeForm(); submitValue('#dede0c');"></button>
+                    <button id="moodButtons" type="button" class="lightGreenButton"
+                        onclick="closeForm(); submitValue('#90ee90');"></button>
+                    <button id="moodButtons" type="button" class="greenButton"
+                        onclick="submitValue('#00e000'); closeForm();"></button>
                 </div>
                 <button type="button" class="cancel" onclick="closeForm()">Close</button>
                 <button type="button" class="moodDetails" onclick="openDetails()">Colour Details</button>
@@ -49,7 +54,7 @@
                         <option value="<%= tag %>"><%= tag %></option>
                     <% }); %>
                 </select>
-            </div>
+            </div> 
 
         <div class="row" id="postsContainer">
             <% storyPosts.forEach(function(post) { %>
@@ -62,6 +67,7 @@
                                 <h5 class="card-title"><%= post.postTitle %></h5>
                                 <p class="card-text"><%= post.postTag %></p>
                             </div>
+<<<<<<< Updated upstream
                         </div>
                     </a>
                 </div>
@@ -73,6 +79,50 @@
         function openForm() {
             document.getElementById("myForm").style.display = "block";
         }
+=======
+                        </a>
+                    </div>
+                    <% }); %>
+            </div>
+        </section>
+        <script>
+
+            function submitValue(value) {
+                const formData = {
+                    colour: value
+                };
+                // console.log(JSON.stringify(formData));
+                console.log(JSON.stringify(formData))
+
+                console.log("test");
+                fetch('/saveMood', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        // console.log(data);
+                        alert('Value saved successfully');
+                        // closeForm();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving value');
+                    });
+            };
+        </script>
+        <script>
+            //if comment out from here to 91 filter
+            function sendColor() {
+
+            }
+            function openForm() {
+                document.getElementById("myForm").style.display = "block";
+            }
+>>>>>>> Stashed changes
 
             function closeForm() {
                 document.getElementById("myForm").style.display = "none";
@@ -91,8 +141,8 @@
             slider.oninput = function () {
                 output.innerHTML = this.value;
             }
-            </script>
-            <script>
+        </script>
+        <script>
 
             // Tag filter
             document.getElementById('postTagFilter').addEventListener('change', function () {
