@@ -174,45 +174,70 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 
   // Retrieve query parameters
   const { postObjectID, message } = req.query;
-  //console.log(postObjectID);
+  
   // Decode URI components and parse comments if available
   const decodedMessage = message ? decodeURIComponent(message) : '';
   const decodedPostID = postObjectID ? decodeURIComponent(postObjectID) : '';
-  //console.log(decodedPostID);
-  const postId = new ObjectId(decodedPostID); 
-  console.log(postId);
-  const currentDraft = await draftsCollection.findOne( {postId: new ObjectId(postId)} ); 
-  console.log(currentDraft);
 
-  if (!currentDraft) {
-    res.status(404);
-    res.render("error", {message: "Draft not found"});
+  let postId;
+  if (ObjectId.isValid(decodedPostID)) {
+    postId = new ObjectId(decodedPostID);
   }
 
-
-    
-    // Now you have randomUsername and randomAvatar, you can proceed with your logic
-    res.render('createPost', {
-      postTitle: currentDraft.postTitle,
-      randomGenUsername: " ",
-      randomAvatar: " ",
-      postTag: currentDraft.postTag,
-      postUploadImage: currentDraft.postUploadImage,
-      postLink: currentDraft.postLink,
-      postContent: currentDraft.postContent,
-      commentVisibility: currentDraft.commentVisibility,
-      postId: currentDraft.postId,
-      username: currentDraft.username
+  if (!postId) {
+    // If postId is not valid, render createPost with empty fields
+    return res.render('createPost', {
+      postTitle: '',
+      randomGenUsername: '',
+      randomAvatar: '',
+      postTag: '',
+      postUploadImage: '',
+      postLink: '',
+      postContent: '',
+      commentVisibility: '',
+      postId: '',
+      username: username
     });
+  }
 
-    const draftRemovalStatus = await draftsCollection.deleteOne({ postId: new ObjectId(postId) });
+  const currentDraft = await draftsCollection.findOne({ postId: postId });
 
-    if (draftRemovalStatus) {
-      console.log("Successfully removed draft after submission!");
-    } else {
-      console.log("Failed to remove draft!");
-    }
-  
+  if (!currentDraft) {
+    return res.render('createPost', {
+      postTitle: '',
+      randomGenUsername: '',
+      randomAvatar: '',
+      postTag: '',
+      postUploadImage: '',
+      postLink: '',
+      postContent: '',
+      commentVisibility: '',
+      postId: '',
+      username: username
+    });
+  }
+
+  // Render createPost with current draft details
+  res.render('createPost', {
+    postTitle: currentDraft.postTitle,
+    randomGenUsername: " ",
+    randomAvatar: " ",
+    postTag: currentDraft.postTag,
+    postUploadImage: currentDraft.postUploadImage,
+    postLink: currentDraft.postLink,
+    postContent: currentDraft.postContent,
+    commentVisibility: currentDraft.commentVisibility,
+    postId: currentDraft.postId,
+    username: currentDraft.username
+  });
+
+  const draftRemovalStatus = await draftsCollection.deleteOne({ postId: postId });
+
+  if (draftRemovalStatus) {
+    console.log("Successfully removed draft after submission!");
+  } else {
+    console.log("Failed to remove draft!");
+  }
 });
 
 const upload = multer();
