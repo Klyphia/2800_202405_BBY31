@@ -4,9 +4,9 @@
     margin-top: 150px;
 }
 
-.back-button a {
+/* .back-button a {
     display: inline-block; 
-}
+} */
 
 .back-image{
     width: 40px;
@@ -44,7 +44,7 @@
     cursor: pointer;
 }
 
-#entriesContainer {
+.noEntriesMsg {
     display: flex;
     justify-content: center;
 }

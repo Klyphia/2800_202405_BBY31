@@ -1,8 +1,6 @@
 <%- include('templates/header.ejs') %>
     <div class="back-button">
-        <a href="/journal">
-            <img class="back-image" src="/images/back.png">
-        </a>
+        <img id="back-button"class="back-image" src="/images/back.png">
     </div>
     <div class="entries-welcome">
         <h2
@@ -59,6 +57,7 @@
                             // If no entries, display a message
                             const entriesContainer = document.getElementById('entriesContainer');
                             const noEntriesMessage = document.createElement('p');
+                            noEntriesMessage.classList.add("noEntriesMsg");
                             noEntriesMessage.textContent = 'No journal entries found.';
                             entriesContainer.appendChild(noEntriesMessage);
                         } else {
@@ -179,6 +178,11 @@
                         console.error('Error updating journal entry:', err);
                     });
             }
+        });
+
+        const backButton = document.getElementById("back-button");
+        backButton.addEventListener('click', function(){
+            window.history.back();
         });
     </script>
     <%- include('templates/footer.ejs') %>

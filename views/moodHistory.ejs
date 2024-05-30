@@ -1,8 +1,6 @@
 <%- include("templates/header.ejs") %>
     <div class="back-button">
-        <a href="/journal">
-            <img class="back-image" src="/images/back.png">
-        </a>
+        <img id="back-button" class="back-image" src="/images/back.png">
     </div>
     <div class="container my-4" id="calendar-container">
         <h2 class="calendar-welcome"
@@ -68,7 +66,7 @@
                     // Redirect to viewEntries page with selected date as query parameter
                     window.location.href = `/viewEntries?date=${formattedDate}`;
                 });
-                
+
                 calendarDaysContainer.appendChild(dayElement);
             }
 
@@ -81,6 +79,11 @@
                 console.log(mood.colour);
                 // dayElements[day - 1 + firstDayOfMonth].querySelector('.mood').textContent = 'Mood recorded';
             });
+        });
+
+        const backButton = document.getElementById("back-button");
+        backButton.addEventListener('click', function () {
+            window.history.back();
         });
     </script>
 
