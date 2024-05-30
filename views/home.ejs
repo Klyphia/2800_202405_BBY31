@@ -36,7 +36,6 @@
         </div>
 
         <section class="grid-container pb-5" style="position: relative;">
-            <!-- Add pb-5 class for padding at the bottom -->
             <p id="quote" style="text-align: center;"></p>
             <p id="author" style="padding: auto; text-align: center;"></p>
             <h2 class="text-center">Recent Posts</h2>
@@ -45,7 +44,6 @@
                 <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
                 <select id="postTagFilter">
                     <option value="all">All</option>
-                            <!-- Loop through uniqueTags and create an option for each tag -->
                     <% 
                         // Extract unique postTags
                         const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
@@ -55,23 +53,25 @@
                     <% }); %>
                 </select>
             </div> 
-
-        <div class="row" id="postsContainer">
-            <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <input type="hidden" name="username" value="<%= username %>">
-                    <input type="hidden" name="message" value="<%= message %>">
-                    <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= post.postTitle %></h5>
-                                <p class="card-text"><%= post.postTag %></p>
+        
+            <div class="row" id="postsContainer">
+                <% storyPosts.forEach(function(post) { %>
+                    <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
+                        <input type="hidden" name="username" value="<%= username %>">
+                        <input type="hidden" name="message" value="<%= message %>">
+                        <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
+                            <div class="card shadow" style="background-color: #a3f7b5; margin-left: 3px; margin-right: 3px; box-shadow: 2px;" >
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= post.postTitle %></h5>
+                                    <p class="card-text"><%= post.postTag %></p>
+                                </div>
                             </div>
                         </a>
                     </div>
-                    <% }); %>
+                <% }); %>
             </div>
         </section>
+        
         <script>
 
             function submitValue(value) {
@@ -131,19 +131,24 @@
         <script>
 
             // Tag filter
-            document.getElementById('postTagFilter').addEventListener('change', function () {
-                const selectedTag = this.value;
-                const posts = document.querySelectorAll('.post-card');
+            document.addEventListener('DOMContentLoaded', function() {
+    const postTagFilter = document.getElementById('postTagFilter');
+    const postsContainer = document.getElementById('postsContainer');
+    const posts = postsContainer.getElementsByClassName('post-card');
 
-                posts.forEach(post => {
-                    const postTag = post.getAttribute('data-post-tag');
-                    if (selectedTag === 'all' || postTag === selectedTag) {
-                        post.style.display = 'block';
-                    } else {
-                        post.style.display = 'none';
-                    }
-                });
-            });
+    postTagFilter.addEventListener('change', function() {
+        const selectedTag = this.value;
+        Array.from(posts).forEach(function(post) {
+            const postTag = post.getAttribute('data-post-tag');
+            if (selectedTag === 'all' || postTag === selectedTag) {
+                post.style.display = 'block';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    });
+});
+
         </script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
