@@ -965,6 +965,12 @@ app.post('/reportPost', sessionValidation, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post already flagged' });
     }
 
+    let flaggedCounter = 0;
+
+    flaggedCounter++;
+
+    console.log(flaggedCounter);
+
     const flaggedPost = {
       postId: postObjectId,
       creatorUsername: post.username,
@@ -975,6 +981,7 @@ app.post('/reportPost', sessionValidation, async (req, res) => {
       postTitle: post.postTitle,
       postContent: post.postContent,
       commentVisibility: post.commentVisibility,
+      flaggedCounter: flaggedCounter
     }
     // Add the post to the user's savedPosts array
     await flaggedCollection.insertOne(
