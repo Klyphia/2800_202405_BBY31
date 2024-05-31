@@ -2,6 +2,7 @@
 
     <head>
         <link rel="stylesheet" href="style/home.css">
+        <script src="https://cdn.countapi.xyz/counter.js"></script>
     </head>
 
     <body>
@@ -14,20 +15,27 @@
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
                     <button id="moodButtons" type="button" class="redButton"
-                        onclick="submitValue('#ff0000'); closeForm();"></button>
+                        onclick="submitValue('#ff0000'); closeForm(); ">1</button>
                     <button id="moodButtons" type="button" class="orangeButton"
-                        onclick=" submitValue('#ffa500'); closeForm();"></button>
+                        onclick="submitValue('#ffa500'); closeForm(); ">2</button>
                     <button id="moodButtons" type="button" class="yellowButton"
-                        onclick="submitValue('#dede0c'); closeForm();"></button>
+                        onclick="submitValue('#dede0c'); closeForm(); ">3</button>
                     <button id="moodButtons" type="button" class="lightGreenButton"
-                        onclick="submitValue('#90ee90'); closeForm();"></button>
+                        onclick="submitValue('#90ee90'); closeForm(); ">4</button>
                     <button id="moodButtons" type="button" class="greenButton"
-                        onclick="submitValue('#00e000'); closeForm();"></button>
+                        onclick="submitValue('#00e000'); closeForm();">5</button>
                 </div>
                 <button type="button" class="cancel" onclick="closeForm()">Close</button>
                 <button type="button" class="moodDetails" onclick="openDetails()">Colour Details</button>
             </form>
         </div>
+        <div id="colorDetails"><pre>
+1 = Terrible day.
+2 = Bad day.
+3 = Neutral day.
+4 = Good day.
+5 = Amazing day.
+        </pre></div>
 
         <!-- Centering the section with class "daily-quote" -->
         <!-- style height is for changing the size of the webpage -->
@@ -73,7 +81,7 @@
         </section>
         
         <script>
-
+            
             function submitValue(value) {
                 const formData = {
                     colour: value
@@ -112,7 +120,7 @@
 
             function closeForm() {
                 document.getElementById("myForm").style.display = "none";
-                document.getElementById("colourDetails").style.display = "none";
+                document.getElementById("colorDetails").style.display = "none";
             }
 
             function openDetails() {
@@ -173,4 +181,46 @@
             });
 
         </script>
+        <script>
+            function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+// Function to get a cookie value by name
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var cookies = document.cookie.split(';');
+    for(var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        while (cookie.charAt(0) == ' ') {
+            cookie = cookie.substring(1, cookie.length);
+        }
+        if (cookie.indexOf(nameEQ) == 0) {
+            return cookie.substring(nameEQ.length, cookie.length);
+        }
+    }
+    return null;
+}
+
+// Function to track page visits
+function trackPageVisits() {
+    var visitCount = getCookie('visitCount');
+    if (visitCount) {
+        visitCount = parseInt(visitCount) + 1;
+    } else {
+        visitCount = 1;
+    }
+    setCookie('visitCount', visitCount, 365); // Cookie expires in 365 days
+    console.log("Page visits: " + visitCount);
+}
+
+// Call trackPageVisits() when the page loads
+trackPageVisits();
+            </script>
         <%- include('templates/footer.ejs') %>

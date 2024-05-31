@@ -1,13 +1,12 @@
 #formGrid {
   display: grid;
   grid-template-columns: 90px 90px 90px;
-  grid-template-rows: 130px 70px 70px 70px;
+  grid-template-rows: 130px 60px 60px 60px;
   grid-template-areas:
     "moodTitle moodTitle moodTitle"
     "moodButton moodButton moodButton"
     "cancel cancel cancel"
     "moodDetails moodDetails moodDetails";
-
 }
 
 .open-button {
@@ -28,29 +27,34 @@
   overflow-x: hidden;
 }
 
-/* The popup form  */
 .form-popup {
   display: flex;
   position: fixed;
-  bottom: 0px;
+  bottom: 250px;
   right: 70px;
   border: 3px solid #a3f7b5;
   z-index: 9;
   text-align: center;
   overflow-y: hidden;
   border-radius: 15px;
+  height: 350px;
+
 }
 
-.colorDetails {
+#colorDetails {
   display: none;
   position: fixed;
-  bottom: 2px;
-  right: 50px;
-  border: 3px solid gray;
+  bottom: 120px;
+  right: 70px;
+  border: 3px solid #a3f7b5;
   border-radius: 15px;
   z-index: 9;
-  text-align: center;
+  padding: 10px;
   overflow-y: hidden;
+  background-color: white;
+  height: 130px;
+  padding-left: 80px;
+  padding-right: 80px
 }
 
 /* Add styles to the form container */
@@ -59,21 +63,11 @@
   padding: 10px;
   background-color: white;
   overflow-y: hidden;
-
 }
 
 .moodTitle {
   font-size: 36px;
   grid-area: moodTitle;
-}
-
-.form-container .btn {
-  background-color: #04AA6D;
-  color: white;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  opacity: 0.8;
 }
 
 .cancel {
@@ -84,6 +78,9 @@
   cursor: pointer;
   border-radius:15px;
   margin: 5px;
+  padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 /* Add some hover effects to buttons */
@@ -101,6 +98,9 @@
   cursor: pointer;
   border-radius:15px; 
   margin: 5px;
+  padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 #moodButton {

@@ -54,6 +54,8 @@ const randomCollection = database.db(mongodb_database).collection("random_gen_co
 
 const moodHistory = database.db(mongodb_database).collection("mood_history");
 
+const flaggedCollection = database.db(mongodb_database).collection("flagged_posts");
+
 var mongoStore = MongoStore.create({
   mongoUrl,
   crypto: {
@@ -914,6 +916,81 @@ app.post('/savePostToUser', sessionValidation, async (req, res) => {
 
     console.log('Post saved successfully');
     res.json({ success: true, message: 'Post saved successfully!' });
+  } catch (error) {
+    console.error('Error saving post:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.post('/reportPost', sessionValidation, async (req, res) => {
+  const username = req.session.username;
+  const { postId } = req.body;
+  
+
+  try {
+    console.log('Request received to flag post:', postId);
+
+    // Convert postId to ObjectId
+    const postObjectId = new ObjectId(postId);
+
+    // Fetch the post from the posts collection using _id field
+    const post = await postsCollection.findOne({ postId: postObjectId });
+    console.log(postId);
+    console.log(post);
+    if (!post) {
+      console.log('Post not found');
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    console.log('Post found:', post);
+
+    // // Check if the post is already saved by the user
+    // const user = await userCollection.findOne({ username: username });
+    // if (!user) {
+    //   console.log('User not found');
+    //   return res.status(404).json({ success: false, message: 'User not found' });
+    // }
+
+    // console.log('User found:', user);
+
+    // if (user.savedPosts.some(savedPost => savedPost.equals(post._id))) {
+    //   console.log('Post already saved by user');
+    //   return res.status(400).json({ success: false, message: 'This post has already been saved!' });
+    // }
+    //let {sessionUsername, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, message} = req.body;
+
+    const alreadyFlagged = await flaggedCollection.findOne({ postId: postObjectId });
+    if(alreadyFlagged){
+      console.log('Post already flagged');
+      return res.status(404).json({ success: false, message: 'Post already flagged' });
+    }
+
+    let flaggedCounter = 0;
+
+    flaggedCounter++;
+
+    console.log(flaggedCounter);
+
+    const flaggedPost = {
+      postId: postObjectId,
+      creatorUsername: post.username,
+      sessionUsername: username,
+      postTag: post.postTag,
+      postUploadImage: post.postUploadImage,
+      postLink: post.postLink,
+      postTitle: post.postTitle,
+      postContent: post.postContent,
+      commentVisibility: post.commentVisibility,
+      flaggedCounter: flaggedCounter
+    }
+    // Add the post to the user's savedPosts array
+    await flaggedCollection.insertOne(
+      flaggedPost
+
+    );
+
+    console.log('Post flagged successfully');
+    res.json({ success: true, message: 'Post was flagged!' });
   } catch (error) {
     console.error('Error saving post:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
