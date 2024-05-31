@@ -1,0 +1,16 @@
+.modal-close{
+    background-color: rgb(212, 50, 50);
+}
+
+.modal-content {
+    background-color: #8cdd9e;
+}
+
+.modal-body textarea {
+    background-color: #d4efda;
+}
+
+.modal-save {
+    background-color: #37944b8e;
+    border-color: #1e51298e;
+}

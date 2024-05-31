@@ -1,42 +1,90 @@
 <%- include("templates/header.ejs") %>
-<div class="container my-4" id="calendar-container">
-    <h2>Monthly Mood Calendar</h2>
-    <div id="calendar" class="calendar">
-        <div class="row">
-            <div class="col header">Sun</div>
-            <div class="col header">Mon</div>
-            <div class="col header">Tue</div>
-            <div class="col header">Wed</div>
-            <div class="col header">Thu</div>
-            <div class="col header">Fri</div>
-            <div class="col header">Sat</div>
-        </div>
-        <div id="calendar-days" class="calendar-days"></div>
+    <div class="back-button">
+        <img id="back-button" class="back-image" src="/images/back.png">
     </div>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const calendarDaysContainer = document.getElementById('calendar-days');
+    <div class="container my-4" id="calendar-container">
+        <h2 class="calendar-welcome"
+            style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif">
+            <%= username %>'s Monthly Mood Calendar
+        </h2>
+        <div id="calendar" class="calendar">
+            <div class="row calendar-row">
+                <div class="col header calendar-header">Sun</div>
+                <div class="col header calendar-header">Mon</div>
+                <div class="col header calendar-header">Tue</div>
+                <div class="col header calendar-header">Wed</div>
+                <div class="col header calendar-header">Thu</div>
+                <div class="col header calendar-header">Fri</div>
+                <div class="col header calendar-header">Sat</div>
+            </div>
+            <div id="calendar-days" class="calendar-days"></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const response = await fetch("/getMoodData");
+            const moodData = await response.json();
+            const calendarDaysContainer = document.getElementById('calendar-days');
 
-        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-        const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+            const currentDate = new Date(); // Get current date
+            const currentDay = currentDate.getDate();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
 
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            const emptyDay = document.createElement('div');
-            emptyDay.classList.add('day');
-            calendarDaysContainer.appendChild(emptyDay);
-        }
+            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
 
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dayElement = document.createElement('div');
-            dayElement.classList.add('day');
-            dayElement.innerHTML = `
-                <span>${i}</span>
-                <span class="mood">No mood recorded</span>
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.classList.add('day');
+                calendarDaysContainer.appendChild(emptyDay);
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('day');
+
+                if (i === currentDay) {
+                    dayElement.classList.add('current-day'); // Add a class for current day
+                }
+
+                dayElement.innerHTML = `
+                <span class="mood-date-text">${i}</span>
             `;
-            calendarDaysContainer.appendChild(dayElement);
-        }
-    });
-</script>
+                dayElement.style.backgroundColor = "#DBDFDF";
 
-<%- include("templates/footer.ejs") %>
+                if (i === currentDay) {
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    dayElement.appendChild(circle);
+                }
+
+                dayElement.addEventListener('click', function () {
+                    const selectedDate = new Date(currentYear, currentMonth, i);
+                    const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
+                    // Redirect to viewEntries page with selected date as query parameter
+                    window.location.href = `/viewEntries?date=${formattedDate}`;
+                });
+
+                calendarDaysContainer.appendChild(dayElement);
+            }
+
+            moodData.forEach(mood => {
+                const moodDate = new Date(mood.timestamp);
+                const day = moodDate.getDate();
+
+                const dayElements = document.querySelectorAll('.calendar-days .day');
+                dayElements[day - 1 + firstDayOfMonth].style.backgroundColor = mood.colour;
+                console.log(mood.colour);
+                // dayElements[day - 1 + firstDayOfMonth].querySelector('.mood').textContent = 'Mood recorded';
+            });
+        });
+
+        const backButton = document.getElementById("back-button");
+        backButton.addEventListener('click', function () {
+            window.history.back();
+        });
+    </script>
+
+    <%- include("templates/footer.ejs") %>

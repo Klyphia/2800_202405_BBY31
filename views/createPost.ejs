@@ -1,71 +1,75 @@
 <%- include('templates/header.ejs') %>
 
-<div class="container d-flex h-100 justify-content-center align-items-center">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data" style="margin-bottom: 80px;">
-                <!-- Hidden field for postID, randonGenUsername, and randomAvatar -->
-                <input type="hidden" id="postID" name="postID" value="<%= postID %>">
-                <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
-                <input type="hidden" id="randomAvatar" name="randomAvatar" value="<%= randomAvatar %>">
+<div class="container form-container">
+    <div class="col-lg-6 col-md-8 col-sm-10">
+      <form id="postForm" action="/submitPost" method="post" enctype="multipart/form-data">
+        <input type="hidden" id="postId" name="postId" value="<%= postId %>">
+        <input type="hidden" id="randomGenUsername" name="randomGenUsername" value="<%= randomGenUsername %>">
+        <input type="hidden" id="randomAvatar" name="randomAvatar" value="<%= randomAvatar %>">
+        <input type="hidden" id="username" name="username" value="<%= username %>">
 
-                <!-- Other form fields for post title, tag, and content -->
-                <label for="postTitle">Title:</label>
-                <input type="text" id="postTitle" name="postTitle" value="<%= postTitle %>" required>
-                <br>
-                
-                <label for="postTag">Tag:</label>
-                <select id="postTag" name="postTag" required>
-                    <option value="#Optimistic" <%= postTag === '#Optimistic' ? 'selected' : '' %>>#Optimistic</option>
-                    <option value="#Happy" <%= postTag === '#Happy' ? 'selected' : '' %>>#Happy</option>
-                    <option value="#Recovery" <%= postTag === '#Recovery' ? 'selected' : '' %>>#Recovery</option>
-                    <option value="#Gloomy" <%= postTag === '#Gloomy' ? 'selected' : '' %>>#Gloomy</option>
-                    <option value="#Trying_Something_New" <%= postTag === '#Trying_Something_New' ? 'selected' : '' %>>#Trying Something New</option>
-                </select>
-                <br>
-              
-                <!-- Input field for uploading image -->
-                <label for="postImage">Upload Image:</label>
-                <input type="file" id="postUploadImage" name="postUploadImage" value="<%= postUploadImage %>">
-                <br>
-              
-                <!-- Input field for sharing a link -->
-                <label for="postLink">Share Link:</label>
-                <input type="text" id="postLink" name="postLink" value="<%= postLink %>">
-                <br>
+        <h2 class="text-center mb-4" id="createPostUnderline">Create a Post</h2>
 
-                <!-- Checkbox for making comments visible -->
-                <label for="makeCommentsVisible">Make Comments Visible:</label>
-                <input type="checkbox" id="makeCommentsVisible" name="makeCommentsVisible" value="true" <%= commentVisibility ? 'checked' : '' %>>
-                <br>
-            
-                <label for="postContent">Content:</label>
-                <textarea id="postContent" name="postContent" rows="4" required><%= postContent %></textarea>
-                <br>
-            
-                <!-- Submit button -->
-                <button type="submit" id="submitPostButton">Submit Post</button>
-                <button type="button" id="saveDraftButton">Save Draft</button> <!-- Change type to button -->
-            </form>
+        <div class="mb-3">
+          <label for="postTitle" class="form-label">Title</label>
+          <input type="text" id="postTitle" name="postTitle" class="form-control" value="<%= postTitle %>" required>
         </div>
-        <% if (typeof error !== 'undefined') { %>
-            <p><%= error %></p>
-        <% } %>
+
+        <div class="mb-3">
+          <label for="postTag" class="form-label">Tag</label>
+          <select id="postTag" name="postTag" class="form-select" required>
+            <option value="#Optimistic" <%= postTag === '#Optimistic' ? 'selected' : '' %>>#Optimistic</option>
+            <option value="#Happy" <%= postTag === '#Happy' ? 'selected' : '' %>>#Happy</option>
+            <option value="#Recovery" <%= postTag === '#Recovery' ? 'selected' : '' %>>#Recovery</option>
+            <option value="#Gloomy" <%= postTag === '#Gloomy' ? 'selected' : '' %>>#Gloomy</option>
+            <option value="#Trying_Something_New" <%= postTag === '#Trying_Something_New' ? 'selected' : '' %>>#Trying Something New</option>
+            <option value="#Unsure" <%= postTag === '#Unsure' ? 'selected' : '' %>>#I'm Unsure</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="postUploadImage" class="form-label">Upload Image</label>
+          <input type="file" id="postUploadImage" name="image" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label for="postLink" class="form-label">Share Link</label>
+          <input type="text" id="postLink" name="postLink" class="form-control" value="<%= postLink %>">
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" id="commentVisibility" name="commentVisibility" class="form-check-input" value="true" <%= commentVisibility ? 'checked' : '' %>>
+          <label for="commentVisibility" class="form-check-label">Make Comments Visible</label>
+        </div>
+
+        <div class="mb-3">
+          <label for="postContent" class="form-label">Content</label>
+          <textarea id="postContent" name="postContent" class="form-control" rows="3" required><%= postContent %></textarea>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <button type="submit" id="submitPostButton" class="btn btn-primary me-md-2">Submit Post</button>
+          <button type="button" id="saveDraftButton" class="btn btn-secondary">Save Draft</button>
+        </div>
+      </form>
+      <% if (typeof error !== 'undefined') { %>
+        <div class="alert alert-danger mt-3"><%= error %></div>
+      <% } %>
     </div>
-</div>
+  </div>
 
-
-
-<script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
+  <script>
     document.getElementById('submitPostButton').addEventListener('click', function() {
-        document.getElementById('postForm').action = '/submitPost';
-        document.getElementById('postForm').submit();
+      document.getElementById('postForm').action = '/submitPost';
+      document.getElementById('postForm').submit();
     });
 
     document.getElementById('saveDraftButton').addEventListener('click', function() {
-        document.getElementById('postForm').action = '/savePost';
-        document.getElementById('postForm').submit();
+      document.getElementById('postForm').action = '/savePost';
+      document.getElementById('postForm').submit();
     });
-</script>
+  </script>
 
 <%- include('templates/footer.ejs') %>

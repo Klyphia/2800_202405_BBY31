@@ -1,14 +1,35 @@
-.journal-card {
-    width: 50%;
-    height: auto;    
+.journal-welcome {
+    margin-top: 250px;
+    display: flex;
+    justify-content: center;
 }
 
 .journal-container {
-    margin-top: 10%;
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    margin-top: 50px;
+    gap: 10px;
 }
 
-.col-sm-6 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.nav-button {
+    text-align: center;
+    cursor: pointer;
+}
+
+
+.nav-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.modal-body textarea {
+    width: 100%;
+    height: 200px;
+    resize: none;
+}
+
+#alertBanner {
+    margin-top: 190px;
 }

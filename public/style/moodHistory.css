@@ -1,20 +1,30 @@
-#calendar-container {
-    padding-top: 10rem;
+.calendar-welcome {
+    display: flex;
+    justify-content: center;
 }
 
 .calendar {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
-    border: 1px solid #ddd;
+    margin-top: 15px;
+    border: 1px solid #292929;
+    overflow: hidden;
 }
 
-.header {
+.calendar-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.calendar-header {
     background-color: #f5f5f5;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #292929;
     padding: 10px;
     text-align: center;
     font-size: 0.9rem;
+    flex: 1;
+    max-width: calc(100% / 7);
 }
 
 .calendar-days {
@@ -23,8 +33,8 @@
 }
 
 .calendar-days .day {
-    width: 14.28%; /* 100% / 7 days */
-    border: 1px solid #ddd;
+    width: calc(100% / 7); /* 100% / 7 days */
+    border: 1px solid #292929;
     box-sizing: border-box;
     padding: 5px;
     text-align: center;
@@ -36,8 +46,38 @@
     display: block;
 }
 
+.mood-date-text {
+    font-size: 1.2em; /* Adjust the font size as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px;
+}
+
+.current-day {
+    position: relative;
+}
+
+.current-day .mood-date-text {
+    position: relative;
+    z-index: 1; /* Ensure the number is above the circle */
+}
+
+.current-day .circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px; /* Adjust the size of the circle */
+    height: 30px; /* Adjust the size of the circle */
+    border-radius: 50%;
+    background-color: #F8A4A7; /* Example: Yellow background for circle */
+    z-index: 0; /* Ensure the circle is below the number */
+}
+
+
 @media (max-width: 768px) {
-    .header {
+    .calendar-header {
         font-size: 0.8rem;
     }
 
@@ -48,7 +88,7 @@
 }
 
 @media (max-width: 576px) {
-    .header {
+    .calendar-header {
         font-size: 0.7rem;
     }
 
