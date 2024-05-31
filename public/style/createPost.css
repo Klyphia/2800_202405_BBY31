@@ -1,136 +1,22 @@
-
-*{
-    font-family: 'Times New Roman', Times, serif;
-    font-weight: bold;
-    overflow-x: hidden; 
-}
-.postformbody{
-    background-color: red;
-    color: blue;
-    font-size: 100px;
-}
 .form-container {
     display: flex;
-    justify-content: center; /* Centers items horizontally */
-    align-items: center; /* Centers items vertically */
-    min-height: 80vh; /* Ensures container takes full viewport height */
-}
-body {
-    background-color: #E5F9E0;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Full viewport height */
 }
 
 #postForm {
-    width: 100%;
-    height: 78%;
-    max-width: 600px;
-    min-width: 450px;
-    padding: 40px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.5);
-    background-color: #A3F7B5;
-    color: #664147;
-    font-family: Arial, sans-serif;
-    box-sizing: border-box;
-    margin-top: 123px;
-    overflow: hidden;
-    margin-bottom: 10px;
+    margin-top: 100px;
+    margin-bottom: 100px;
+    padding: 30px;
+
+    background-color: #E5F9E0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Label styling */
-#postForm label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-/* Input and select styling */
-#postForm input[type="text"],
-#postForm select,
-#postForm input[type="file"],
-#postForm textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-    font-size: 16px;
-    background-color: #E5f9E0;
-}
-
-/* Checkbox styling */
-#postForm input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-/* Button styling */
-#postForm button {
-    width: 48%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-sizing: border-box;
-}
-
-#submitPostButton {
-    background-color: #4CAF50;
-    color: white;
-}
-
-#submitPostButton:hover {
-    background-color: #45a049;
-}
-
-#saveDraftButton {
-    background-color: #008CBA;
-    color: white;
-}
-
-#saveDraftButton:hover {
-    background-color: #007bb5;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    #postForm {
-        width: 95%;
-        padding: 20px;
-    }
-
-    #postForm button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    #postForm {
-        padding: 15px;
-    }
-
-    #postForm label, 
-    #postForm input[type="text"], 
-    #postForm select, 
-    #postForm input[type="file"], 
-    #postForm textarea, 
-    #postForm button {
-        font-size: 14px;
-    }
-
-    #postForm button {
-        padding: 8px;
-    }
-}
-
-/* Additional media query for larger screens */
-@media (min-width: 1200px) {
-    .form-container {
-        justify-content: center; /* Ensures the form is centered horizontally */
-        align-items: flex-start; /* Keeps the form at the top of the viewport */
-    }
+#createPostUnderline {
+    border-bottom: black dotted 2px;
 }

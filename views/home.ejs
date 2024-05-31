@@ -2,11 +2,12 @@
 
     <head>
         <link rel="stylesheet" href="style/home.css">
+        <script src="https://cdn.countapi.xyz/counter.js"></script>
     </head>
 
     <body>
         <!-- A button to open the popup form -->
-        <button class="open-button" onclick="openForm()">Open Form</button>
+        <button class="open-button" onclick="openForm()">Daily Mood Tracker</button>
 
         <!-- The form -->
         <div class="form-popup" id="myForm">
@@ -14,20 +15,27 @@
                 <p class="moodTitle">How are you feeling today?</p>
                 <div id="moodButton">
                     <button id="moodButtons" type="button" class="redButton"
-                        onclick="submitValue('#ff0000');"></button>
+                        onclick="submitValue('#ff0000'); closeForm(); ">1</button>
                     <button id="moodButtons" type="button" class="orangeButton"
-                        onclick="closeForm(); submitValue('#ffa500');"></button>
+                        onclick="submitValue('#ffa500'); closeForm(); ">2</button>
                     <button id="moodButtons" type="button" class="yellowButton"
-                        onclick="closeForm(); submitValue('#dede0c');"></button>
+                        onclick="submitValue('#dede0c'); closeForm(); ">3</button>
                     <button id="moodButtons" type="button" class="lightGreenButton"
-                        onclick="closeForm(); submitValue('#90ee90');"></button>
+                        onclick="submitValue('#90ee90'); closeForm(); ">4</button>
                     <button id="moodButtons" type="button" class="greenButton"
-                        onclick="submitValue('#00e000'); closeForm();"></button>
+                        onclick="submitValue('#00e000'); closeForm();">5</button>
                 </div>
                 <button type="button" class="cancel" onclick="closeForm()">Close</button>
                 <button type="button" class="moodDetails" onclick="openDetails()">Colour Details</button>
             </form>
         </div>
+        <div id="colorDetails"><pre>
+1 = Terrible day.
+2 = Bad day.
+3 = Neutral day.
+4 = Good day.
+5 = Amazing day.
+        </pre></div>
 
         <!-- Centering the section with class "daily-quote" -->
         <!-- style height is for changing the size of the webpage -->
@@ -36,7 +44,6 @@
         </div>
 
         <section class="grid-container pb-5" style="position: relative;">
-            <!-- Add pb-5 class for padding at the bottom -->
             <p id="quote" style="text-align: center;"></p>
             <p id="author" style="padding: auto; text-align: center;"></p>
             <h2 class="text-center">Recent Posts</h2>
@@ -45,7 +52,6 @@
                 <label for="postTagFilter" class="mr-2">Filter by Tag:</label>
                 <select id="postTagFilter">
                     <option value="all">All</option>
-                            <!-- Loop through uniqueTags and create an option for each tag -->
                     <% 
                         // Extract unique postTags
                         const uniqueTags = [...new Set(storyPosts.map(post => post.postTag))];
@@ -55,21 +61,22 @@
                     <% }); %>
                 </select>
             </div> 
-
-        <div class="row" id="postsContainer">
-            <% storyPosts.forEach(function(post) { %>
-                <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
-                    <input type="hidden" name="username" value="<%= username %>">
-                    <input type="hidden" name="message" value="<%= message %>">
-                    <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= post.postTitle %></h5>
-                                <p class="card-text"><%= post.postTag %></p>
+        
+            <div class="row" id="postsContainer">
+                <% storyPosts.forEach(function(post) { %>
+                    <div class="col-md-4 mb-4 post-card" data-post-tag="<%= post.postTag %>">
+                        <input type="hidden" name="username" value="<%= username %>">
+                        <input type="hidden" name="message" value="<%= message %>">
+                        <a href="/viewposts?postObjectID=<%= encodeURIComponent(post.postId) %>&username=<%= encodeURIComponent(username) %>&message=<%= encodeURIComponent(message) %>" class="card-link">
+                            <div class="card shadow" style="background-color: #a3f7b5; margin-left: 3px; margin-right: 3px; box-shadow: 2px;" >
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= post.postTitle %></h5>
+                                    <p class="card-text"><%= post.postTag %></p>
+                                </div>
                             </div>
                         </a>
                     </div>
-                    <% }); %>
+                <% }); %>
             </div>
         </section>
         
@@ -113,7 +120,7 @@
 
             function closeForm() {
                 document.getElementById("myForm").style.display = "none";
-                document.getElementById("colourDetails").style.display = "none";
+                document.getElementById("colorDetails").style.display = "none";
             }
 
             function openDetails() {
@@ -132,19 +139,24 @@
         <script>
 
             // Tag filter
-            document.getElementById('postTagFilter').addEventListener('change', function () {
-                const selectedTag = this.value;
-                const posts = document.querySelectorAll('.post-card');
+            document.addEventListener('DOMContentLoaded', function() {
+    const postTagFilter = document.getElementById('postTagFilter');
+    const postsContainer = document.getElementById('postsContainer');
+    const posts = postsContainer.getElementsByClassName('post-card');
 
-                posts.forEach(post => {
-                    const postTag = post.getAttribute('data-post-tag');
-                    if (selectedTag === 'all' || postTag === selectedTag) {
-                        post.style.display = 'block';
-                    } else {
-                        post.style.display = 'none';
-                    }
-                });
-            });
+    postTagFilter.addEventListener('change', function() {
+        const selectedTag = this.value;
+        Array.from(posts).forEach(function(post) {
+            const postTag = post.getAttribute('data-post-tag');
+            if (selectedTag === 'all' || postTag === selectedTag) {
+                post.style.display = 'block';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    });
+});
+
         </script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
@@ -169,4 +181,46 @@
             });
 
         </script>
+        <script>
+            function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+// Function to get a cookie value by name
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var cookies = document.cookie.split(';');
+    for(var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        while (cookie.charAt(0) == ' ') {
+            cookie = cookie.substring(1, cookie.length);
+        }
+        if (cookie.indexOf(nameEQ) == 0) {
+            return cookie.substring(nameEQ.length, cookie.length);
+        }
+    }
+    return null;
+}
+
+// Function to track page visits
+function trackPageVisits() {
+    var visitCount = getCookie('visitCount');
+    if (visitCount) {
+        visitCount = parseInt(visitCount) + 1;
+    } else {
+        visitCount = 1;
+    }
+    setCookie('visitCount', visitCount, 365); // Cookie expires in 365 days
+    console.log("Page visits: " + visitCount);
+}
+
+// Call trackPageVisits() when the page loads
+trackPageVisits();
+            </script>
         <%- include('templates/footer.ejs') %>

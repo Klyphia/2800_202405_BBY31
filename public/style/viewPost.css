@@ -1,20 +1,30 @@
 .float-right {
-    float: right;
+  float: right;
 }
 
 .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  
-  .dropdown-toggle-split {
-    margin-left: 10px; /* add some space between the title and the dropdown toggle */
-  }
-  
-  .dropdown-menu {
-    position: absolute;
-    top: auto;
-    left: -114px; /* position the dropdown menu to the left */
-    transform: translateX(0); /* remove the translation */
-  }
+  position: relative;
+  display: inline-block;
+}
 
+.dropdown-toggle-split {
+  margin-left: 10px; /* Add some space between the title and the dropdown toggle */
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%; /* Ensure the dropdown appears below the button */
+  left: 0;
+  right: auto;
+  transform: translateX(0); /* Ensure dropdown menu aligns correctly */
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+#viewPostSection {
+  position: relative;
+  padding-bottom: 100px;
+}
+
+#commentsSection {
+  position: relative;
+}
