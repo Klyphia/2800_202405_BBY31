@@ -271,10 +271,18 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
     if (req.file) {
       // Upload image to Cloudinary if an image file is provided
       const buf64 = req.file.buffer.toString('base64');
-      const result = await cloudinary.uploader.upload("data:image/png;base64," + buf64);
+      const result = await cloudinary.uploader.upload("data:image/png;base64," + buf64, {
+        detection: 'adv_face'
+      });
       console.log(result);
       // Extract the UID of the uploaded image
       imageUID = result.public_id;
+
+      if (result.info && result.info.detection && result.info.detection.adv_face) {
+        return res.render("invalidImageUpload");
+      }
+
+
     }
 
     // Create the post object
