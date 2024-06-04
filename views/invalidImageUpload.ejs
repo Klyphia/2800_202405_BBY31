@@ -1,0 +1,26 @@
+<%- include('templates/header.ejs') %>
+    <div class="back-button">
+        <img id="back-button" class="back-image" src="/images/back.png">
+    </div>
+    <div class="center-container">
+        <h2>
+            Please do not submit images that may otherwise reveal your identity
+        </h2>
+    </div>
+
+    <script>
+        const backButton = document.getElementById("back-button");
+            backButton.addEventListener('click', function () {
+                window.history.back();
+            });
+    </script>
+<%- include('templates/footer.ejs') %>
+
+<style>
+    .center-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 50px;
+        margin-left: 20px;
+    }
+</style>
