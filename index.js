@@ -12,8 +12,8 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const path = require("path");
 const crypto = require("crypto");
-const {v4: uuid} = require('uuid');
-const cloudinary = require("cloudinary");
+const { v4: uuid } = require('uuid');
+const cloudinary = require("cloudinary").v2;
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_CLOUD_KEY,
@@ -176,7 +176,7 @@ app.get("/createPost", sessionValidation, async (req, res) => {
 
   // Retrieve query parameters
   const { postObjectID, message } = req.query;
-  
+
   // Decode URI components and parse comments if available
   const decodedMessage = message ? decodeURIComponent(message) : '';
   const decodedPostID = postObjectID ? decodeURIComponent(postObjectID) : '';
@@ -272,17 +272,24 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
       // Upload image to Cloudinary if an image file is provided
       const buf64 = req.file.buffer.toString('base64');
       const result = await cloudinary.uploader.upload("data:image/png;base64," + buf64, {
-        detection: 'adv_face'
+        detection: "adv_face" // Enable advanced face detection
       });
-      console.log(result);
+
+      // Log the entire result object to inspect its structure
+      console.log('Cloudinary upload result:', JSON.stringify(result, null, 2));
+
       // Extract the UID of the uploaded image
       imageUID = result.public_id;
 
-      if (result.info && result.info.detection && result.info.detection.adv_face) {
-        return res.render("invalidImageUpload");
+      console.log(imageUID);
+
+      // Check if faces are detected in the uploaded image
+      const facesDetected = result.info && result.info.detection && result.info.detection.adv_face && result.info.detection.adv_face.data ? result.info.detection.adv_face.data.length : 0;
+      console.log(`Faces detected: ${facesDetected}`);
+
+      if (facesDetected > 0) {
+        return res.status(400).render("invalidImageUpload");
       }
-
-
     }
 
     // Create the post object
@@ -303,10 +310,10 @@ app.post("/submitPost", sessionValidation, uploadForImage.single('image'), async
     await postsCollection.insertOne(post);
 
     console.log(post);
-    
+
     res.render('postConfirmation');
   } catch (error) {
-    console.error(error);
+    console.error('Error occurred:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -322,7 +329,7 @@ app.get("/postConfirmation", sessionValidation, async (req, res) => {
 app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
   try {
     const { postTitle, randomGenUsername, randomAvatar, postTag, postUploadImage, postLink, postContent, postId } = req.body;
-    const commentVisibility = req.body.commentVisibility === 'true'? true : false;
+    const commentVisibility = req.body.commentVisibility === 'true' ? true : false;
     const username = req.session.username;
 
     // Create a post object
@@ -345,17 +352,19 @@ app.post("/savePost", sessionValidation, upload.none(), async (req, res) => {
       // If postId exists, update the existing draft
       await draftsCollection.updateOne(
         { postId: new ObjectId(postId) }, // Filter for the existing postId
-        { $set: {
-          postTitle: post.postTitle,
-          randomGenUsername: post.randomGenUsername,
-          randomAvatar: post.randomAvatar,
-          postTag: post.postTag,
-          postUploadImage: post.postUploadImage,
-          postLink: post.postLink,
-          commentVisibility: post.commentVisibility,
-          postContent: post.postContent,
-          username: post.username
-        }}
+        {
+          $set: {
+            postTitle: post.postTitle,
+            randomGenUsername: post.randomGenUsername,
+            randomAvatar: post.randomAvatar,
+            postTag: post.postTag,
+            postUploadImage: post.postUploadImage,
+            postLink: post.postLink,
+            commentVisibility: post.commentVisibility,
+            postContent: post.postContent,
+            username: post.username
+          }
+        }
       );
     } else {
       // If no postId, insert a new draft
@@ -380,7 +389,7 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   try {
     // Convert postObjectID to ObjectId if necessary
     const postIdObj = new ObjectId(postObjectID);
-    
+
     // current post object
     currentPost = await postsCollection.findOne({ postId: postIdObj });
 
@@ -415,7 +424,7 @@ app.get("/viewposts", sessionValidation, fetchAndSortUserComments, async (req, r
   console.log(commentVisibility);
 
   let matchingComments = [];
-  
+
   if (commentVisibility) {
     // Loading in comments if commentVisibility is true
     try {
@@ -506,7 +515,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 
       // Sort the updated comments array by date from latest first to oldest last
       matchingComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } 
+    }
 
     // Usage
     //console.log(stringEquals(sessionUsername, postUsername)); 
@@ -537,7 +546,7 @@ app.post("/post/comment", sessionValidation, async (req, res) => {
 });
 
 app.get("/journal", sessionValidation, async (req, res) => {
-  res.render("journal", {username: req.session.username});
+  res.render("journal", { username: req.session.username });
 });
 
 app.get("/userpage", (req, res) => {
@@ -610,12 +619,16 @@ app.get("/passwordReset", (req, res) => {
 
 app.post("/resetPassword", async (req, res) => {
   const useremail = req.body.email;
+  const username = req.body.username;
 
   try {
     // Checking if the email exists in the userCollection
-    const user = await userCollection.findOne({ email: useremail });
+    const userEmail = await userCollection.findOne({ email: useremail });
 
-    if (!user) {
+    // Checking if the useranme exists in the userCollection
+    const userName = await userCollection.findOne({ username: username });
+
+    if (!userEmail && !userName) {
       return res.status(404).render("noUserFoundPage");
     }
 
@@ -627,7 +640,7 @@ app.post("/resetPassword", async (req, res) => {
 
     // Updating the user document with the reset token and expiry
     await userCollection.updateOne(
-      { email: useremail },
+      { email: useremail, username: username },
       { $set: { resetPasswordToken: token, resetPasswordExpires: tokenExpiry } }
     );
 
@@ -666,7 +679,7 @@ app.post("/resetPassword", async (req, res) => {
       }
     };
 
-    sendMail(transporter, mailOptions);
+    await sendMail(transporter, mailOptions);
 
     res.status(200);
     res.render("resetPasswordMessage");
@@ -819,7 +832,7 @@ app.get("/profile", sessionValidation, async (req, res) => {
 
   const savedPosts = userSavedPosts;
 
-  const userPosts = userMadePosts; 
+  const userPosts = userMadePosts;
 
   res.render("profile", {
     username,
@@ -842,7 +855,7 @@ app.get("/savedDrafts", sessionValidation, async (req, res) => {
   }
 
   const userSavedDrafts = await draftsCollection.find({ username }).toArray();
-  const savedDrafts = userSavedDrafts; 
+  const savedDrafts = userSavedDrafts;
 
   res.render("userDraftsPage", { savedDrafts: savedDrafts, username: username, message: message });
 });
@@ -857,7 +870,7 @@ app.get("/savedPosts", sessionValidation, async (req, res) => {
   }
 
   const userSavedPosts = await savedPostsCollection.find({ sessionUsername: username }).toArray();
-  const savedPosts = userSavedPosts; 
+  const savedPosts = userSavedPosts;
 
   res.render("userSavedPostsPage", { savedPosts: savedPosts });
 });
@@ -865,7 +878,7 @@ app.get("/savedPosts", sessionValidation, async (req, res) => {
 app.post('/savePostToUser', sessionValidation, async (req, res) => {
   const username = req.session.username;
   const { postId } = req.body;
-  
+
 
   try {
     console.log('Request received to save post:', postId);
@@ -897,10 +910,10 @@ app.post('/savePostToUser', sessionValidation, async (req, res) => {
     //   console.log('Post already saved by user');
     //   return res.status(400).json({ success: false, message: 'This post has already been saved!' });
     // }
-    let {sessionUsername, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, message} = req.body;
+    let { sessionUsername, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, message } = req.body;
 
     const alreadySaved = await savedPostsCollection.findOne({ postId: postObjectId });
-    if(alreadySaved){
+    if (alreadySaved) {
       console.log('Post already saved');
       return res.status(404).json({ success: false, message: 'Post already saved' });
     }
@@ -933,7 +946,7 @@ app.post('/savePostToUser', sessionValidation, async (req, res) => {
 app.post('/reportPost', sessionValidation, async (req, res) => {
   const username = req.session.username;
   const { postId } = req.body;
-  
+
 
   try {
     console.log('Request received to flag post:', postId);
@@ -968,7 +981,7 @@ app.post('/reportPost', sessionValidation, async (req, res) => {
     //let {sessionUsername, postTag, postUploadImage, postLink, postTitle, postContent, commentVisibility, comments, message} = req.body;
 
     const alreadyFlagged = await flaggedCollection.findOne({ postId: postObjectId });
-    if(alreadyFlagged){
+    if (alreadyFlagged) {
       console.log('Post already flagged');
       return res.status(404).json({ success: false, message: 'Post already flagged' });
     }
@@ -1085,38 +1098,38 @@ app.get('/getJournalEntries', sessionValidation, async (req, res) => {
 
 app.post('/updateJournalEntry', sessionValidation, async (req, res) => {
   try {
-      const userId = req.session.userid;
-      const { timestamp, entry } = req.body;
+    const userId = req.session.userid;
+    const { timestamp, entry } = req.body;
 
-      // Update the specific entry in the database
-      const result = await moodHistory.updateOne(
-          { userId: userId, 'entries.timestamp': timestamp },
-          { $set: { 'entries.$.entry': entry } }
-      );
+    // Update the specific entry in the database
+    const result = await moodHistory.updateOne(
+      { userId: userId, 'entries.timestamp': timestamp },
+      { $set: { 'entries.$.entry': entry } }
+    );
 
-      if (result.modifiedCount > 0) {
-          res.json({ success: true });
-      } else {
-          res.json({ success: false, message: 'No entry found to update' });
-      }
+    if (result.modifiedCount > 0) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, message: 'No entry found to update' });
+    }
   } catch (error) {
-      console.error('Error updating journal entry:', error);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error('Error updating journal entry:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
 app.get("/viewEntries", sessionValidation, async (req, res) => {
-  res.render("viewEntries", {username: req.session.username});
+  res.render("viewEntries", { username: req.session.username });
 });
 
 app.get("/moodHistory", sessionValidation, async (req, res) => {
-  res.render("moodHistory", {username: req.session.username});
+  res.render("moodHistory", { username: req.session.username });
 });
 
-app.post("/saveMood", sessionValidation, async (req, res) =>{
+app.post("/saveMood", sessionValidation, async (req, res) => {
   try {
     const userId = req.session.userid;
-    const { colour } = req.body; 
+    const { colour } = req.body;
     console.log(colour);
     const timestamp = new Date();
 
@@ -1138,7 +1151,7 @@ app.post("/saveMood", sessionValidation, async (req, res) =>{
   } catch (error) {
     console.error("Error saving mood:", error);
     res.status(500).json({ message: "Internal server error" });
-  }    
+  }
 });
 
 app.use("/*", (req, res) => {

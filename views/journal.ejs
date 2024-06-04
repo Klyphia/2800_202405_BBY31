@@ -1,8 +1,9 @@
 <%- include('templates/header.ejs') %>
     <div class="journal-welcome">
         <h3
-            style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif">
-            Welcome to your journal page, <%= username %>!</h3>
+            style="font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; text-align: center;">
+            Welcome to your journal page, <%= username %>!
+        </h3>
     </div>
     <div class="journal-container d-flex justify-content-around">
         <div class="nav-button journal-button" id="newEntryButton">
@@ -119,4 +120,4 @@
             });
         });
     </script>
-    <%- include('templates/footer.ejs') %>
+<%- include('templates/footer.ejs') %>
