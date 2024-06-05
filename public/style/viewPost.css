@@ -28,3 +28,17 @@
 #commentsSection {
   position: relative;
 }
+
+#submitButton {
+  margin: 10px;
+}
+
+#dropDownMenu {
+  margin: 20px;
+}
+
+.label-margin {
+  margin-left: 16px;
+}
+
+
